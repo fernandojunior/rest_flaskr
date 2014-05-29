@@ -6,6 +6,8 @@ A minimal RESTFUL blog application based on flaskr[1] and Flask-Classy[2].
 You can run rest_flaskr:
     python run.py
 
+Access the test page at http://127.0.0.1:5000/static/site/test.html
+
 Obs: See the requirements.txt needed to run the application.
 
 [1] https://github.com/mitsuhiko/flask/tree/master/examples/flaskr
