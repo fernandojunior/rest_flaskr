@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<title>Flaskr</title>
+<link rel=stylesheet type=text/css href="../style.css">
+<script src="../jquery.js"></script>
+
+<script>
+    
+var BASE_URL = "http://127.0.0.1:5000/api/1.0";
+    
+function getEntry(){
+    
+    $.ajax(
+        {
+            url: BASE_URL + '/entries/1',
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                $( "#content" ).html("entry id: " + data.entry.id);
+            }
+
+        }
+    )
+    
+}
+    
+function getEntries(){
+    
+    $.ajax(
+        {
+            url: BASE_URL + '/entries/',
+            type: "get",
+            dataType: "json",
+            success: function (data) {                
+                $( "#content" ).html("entries length " + data.entries.length);
+            }
+            
+        }
+    )
+    
+}
+
+function postEntry(){
+    $.ajax(
+        {
+            url: BASE_URL + '/entries/',
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                title: "titulo_1",
+                text: "texto asashkj"
+            }),
+            dataType: "json",
+            success: function (data) {                
+                $( "#content" ).html("salvando um entry: " + data.result);
+            }
+            
+        }
+    )
+}
+    
+function putEntry(){
+    $.ajax(
+        {
+            url: BASE_URL + '/entries/1',
+            type: "PUT",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                title: "titulo_1",
+                text: "texto asashkj"
+            }),
+            dataType: "json",
+            success: function (data) {
+                $( "#content" ).html("atualizando um entry: " + data.result);
+            }
+        }
+    )
+
+}
+    
+function deleteEntry(){
+    $.ajax(
+        {
+            url: BASE_URL + '/entries/1',
+            type: "DELETE",
+            dataType: "json",
+            success: function (data) {
+                $( "#content" ).html("deletando um entry: " + data.result);
+            }
+        }
+    )
+}
+    
+$( document ).ready(function() {
+
+    console.log( "document loaded" );
+    
+});
+    
+
+</script>
+
+    
+<body>
+    
+    <input type="button" value="get entry" onclick="getEntry()">
+    <input type="button" value="get entries" onclick="getEntries()">
+    <input type="button" value="post entry" onclick="postEntry()">
+    <input type="button" value="put entry" onclick="putEntry()">
+    <input type="button" value="delete entry" onclick="deleteEntry()">
+
+    <div id="content">
+    </div>
+
+</body>
+</html>
