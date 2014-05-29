@@ -3,22 +3,61 @@
 <title>Flaskr</title>
 <link rel=stylesheet type=text/css href="../style.css">
 <script src="../jquery.js"></script>
+<script src="../mustache.js"></script>
+    
 
 <script>
-    
+
 var BASE_URL = "http://127.0.0.1:5000/api/1.0";
+var TEMPLATE_URL = "http://127.0.0.1:5000/static/site/templates/";
     
+function get_template(template_name){
+    
+    var url = TEMPLATE_URL + template_name + ".mustache";
+    
+    var template = "";
+    
+    $.ajax({
+        url: url,
+        type: 'GET',
+        async: false,
+        success: function(data) {
+            template = data;
+        }
+    });
+
+    return template;
+}
+    
+function render_template(template_name, json){
+    var template = get_template(template_name);
+    Mustache.parse(template);
+    return Mustache.render(template, json);
+}
+    
+function form_to_json(form){
+
+    var array = jQuery(form).serializeArray();
+
+    var json = {};
+
+    jQuery.each(array, function() {
+        json[this.name] = this.value || '';
+    });
+
+    return json;
+}
+
 function getEntry(){
-    
+
     $.ajax(
         {
             url: BASE_URL + '/entries/1',
             type: "get",
             dataType: "json",
             success: function (data) {
-                $( "#content" ).html("entry id: " + data.entry.id);
+                $("#content").html(render_template("entry", data));
             }
-
         }
     )
     
@@ -31,34 +70,36 @@ function getEntries(){
             url: BASE_URL + '/entries/',
             type: "get",
             dataType: "json",
-            success: function (data) {                
-                $( "#content" ).html("entries length " + data.entries.length);
+            success: function (data) {
+                $( "#content" ).html( render_template("entries", data));
             }
-            
         }
     )
     
 }
+    
+function postEntry(form){
 
-function postEntry(){
     $.ajax(
         {
             url: BASE_URL + '/entries/',
             type: "POST",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({
-                title: "titulo_1",
-                text: "texto asashkj"
-            }),
+            data: JSON.stringify(form_to_json(form)),
             dataType: "json",
             success: function (data) {                
-                $( "#content" ).html("salvando um entry: " + data.result);
+                $( "#content" ).html("Entry salvo com id " + data.result);
             }
-            
         }
     )
 }
     
+function show_add_entry_form(){
+
+    $( "#content" ).html(render_template("add_entry"));
+
+}
+
 function putEntry(){
     $.ajax(
         {
@@ -105,7 +146,7 @@ $( document ).ready(function() {
     
     <input type="button" value="get entry" onclick="getEntry()">
     <input type="button" value="get entries" onclick="getEntries()">
-    <input type="button" value="post entry" onclick="postEntry()">
+    <input type="button" value="post entry" onclick="show_add_entry_form()">
     <input type="button" value="put entry" onclick="putEntry()">
     <input type="button" value="delete entry" onclick="deleteEntry()">
 
