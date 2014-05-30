@@ -47,51 +47,58 @@ function form_to_json(form){
 
     return json;
 }
-
-function getEntry(){
-
-    $.ajax(
-        {
-            url: BASE_URL + '/entries/1',
-            type: "get",
-            dataType: "json",
-            success: function (data) {
-                $("#content").html(render_template("entry", data));
-            }
-        }
-    )
     
+function ajax(uri, method, data){
+    
+    var request = {
+        url: uri,
+        type: method,
+        contentType: "application/json",
+        accepts: "application/json",
+        cache: false,
+        dataType: 'json',
+        data: JSON.stringify(data),
+
+        error: function(jqXHR) {
+            console.log("ajax error " + jqXHR.status);
+        }
+    
+    };
+    
+    return $.ajax(request);
+
 }
     
+function getEntry(){
+    
+    var uri = BASE_URL + '/entries/2';
+    
+    ajax(uri, "get")
+        .done(function(data) {
+            $("#content").html(render_template("entry", data));
+        });
+}
+
 function getEntries(){
     
-    $.ajax(
-        {
-            url: BASE_URL + '/entries/',
-            type: "get",
-            dataType: "json",
-            success: function (data) {
-                $( "#content" ).html( render_template("entries", data));
-            }
-        }
-    )
-    
+    var uri = BASE_URL + '/entries/';
+
+    ajax(uri, "get")
+        .done(function(data){
+            $( "#content" ).html(render_template("entries", data));
+        });    
 }
     
 function postEntry(form){
-
-    $.ajax(
-        {
-            url: BASE_URL + '/entries/',
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(form_to_json(form)),
-            dataType: "json",
-            success: function (data) {                
-                $( "#content" ).html("Entry salvo com id " + data.result);
-            }
-        }
-    )
+    
+    var uri = BASE_URL + '/entries/';
+    
+    var json = form_to_json(form);
+    
+    ajax(uri, "post", json)
+        .done(function(data){
+            $( "#content" ).html("Entry salvo com id " + data.result);
+        });
 }
     
 function show_add_entry_form(){
@@ -101,35 +108,28 @@ function show_add_entry_form(){
 }
 
 function putEntry(){
-    $.ajax(
-        {
-            url: BASE_URL + '/entries/1',
-            type: "PUT",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({
-                title: "titulo_1",
-                text: "texto asashkj"
-            }),
-            dataType: "json",
-            success: function (data) {
-                $( "#content" ).html("atualizando um entry: " + data.result);
-            }
-        }
-    )
-
+    
+    var uri = BASE_URL + '/entries/3';
+    
+    var json = {
+        title: "titulo_1",
+        text: "texto asashkj"
+    };
+    
+    ajax(uri, "put", json)
+        .done(function(data){
+            $( "#content" ).html("atualizando um entry: " + data.result);
+        });
 }
     
 function deleteEntry(){
-    $.ajax(
-        {
-            url: BASE_URL + '/entries/1',
-            type: "DELETE",
-            dataType: "json",
-            success: function (data) {
-                $( "#content" ).html("deletando um entry: " + data.result);
-            }
-        }
-    )
+    
+    var uri = BASE_URL + '/entries/2';
+    
+    ajax(uri, "delete")
+        .done(function(data){
+            $( "#content" ).html("deletando um entry: " + data.result);
+        });
 }
     
 $( document ).ready(function() {
