@@ -11,6 +11,23 @@
 var BASE_URL = "http://127.0.0.1:5000/api/1.0";
 var TEMPLATE_URL = "http://127.0.0.1:5000/static/site/templates/";
     
+
+/**
+ * Retorna o valor de um parametro da url
+ * @param name Nome do parametro
+ * @ref http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+**/
+function getParameter(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+/**
+ * Funcao que retorna um template .mustache
+ * @param template_name Nome do template (obs. sem a extensao .mustache)
+**/
 function get_template(template_name){
     
     var url = TEMPLATE_URL + template_name + ".mustache";
@@ -25,29 +42,45 @@ function get_template(template_name){
             template = data;
         }
     });
+    
+    Mustache.parse(template);
 
     return template;
 }
-    
-function render_template(template_name, json){
-    var template = get_template(template_name);
-    Mustache.parse(template);
-    return Mustache.render(template, json);
+
+/**
+ * Renderiza um template com os dados (em json) fornecidos
+ * @param template_name Nome do template
+ * @param data Dados a serem renderizados no template
+**/
+function render_template(template_name, data){
+    var template = get_template(template_name);    
+    return Mustache.render(template, data);
 }
-    
-function form_to_json(form){
+
+/**
+ * Serializa os dados de um formulario em um dicionario
+ * @param form O formulario a ser serializado (como elemento jQuery)
+**/
+function form_to_dict(form){
 
     var array = jQuery(form).serializeArray();
 
-    var json = {};
+    var dict = {};
 
     jQuery.each(array, function() {
-        json[this.name] = this.value || '';
+        dict[this.name] = this.value || '';
     });
 
-    return json;
+    return dict;
 }
-    
+
+/**
+ * Auxilia a fazer requisicoes assincronas
+ * @param uri Recurso da requisicao
+ * @param method Metodo HTTP da requisicao
+ * @param data Dados a serem anexados na requisicao (que seram transformados em json)
+**/
 function ajax(uri, method, data){
     
     var request = {
@@ -69,9 +102,9 @@ function ajax(uri, method, data){
 
 }
     
-function getEntry(){
+function getEntry(id){
     
-    var uri = BASE_URL + '/entries/2';
+    var uri = BASE_URL + '/entries/' + id;
     
     ajax(uri, "get")
         .done(function(data) {
@@ -86,37 +119,32 @@ function getEntries(){
     ajax(uri, "get")
         .done(function(data){
             $( "#content" ).html(render_template("entries", data));
-        });    
+            
+            $("form#add_entry").submit(function(event){
+                event.preventDefault();        
+                postEntry(form_to_dict(this));        
+                return true;
+            });
+
+        });
 }
-    
-function postEntry(form){
+
+function postEntry(dic){
     
     var uri = BASE_URL + '/entries/';
     
-    var json = form_to_json(form);
-    
-    ajax(uri, "post", json)
+    ajax(uri, "post", dic)
         .done(function(data){
-            $( "#content" ).html("Entry salvo com id " + data.result);
+            //$( "#content" ).html("Entry salvo com id " + data.result);
+            getEntries();
         });
 }
     
-function show_add_entry_form(){
-
-    $( "#content" ).html(render_template("add_entry"));
-
-}
-
-function putEntry(){
+function putEntry(dic){
     
     var uri = BASE_URL + '/entries/3';
     
-    var json = {
-        title: "titulo_1",
-        text: "texto asashkj"
-    };
-    
-    ajax(uri, "put", json)
+    ajax(uri, "put", dic)
         .done(function(data){
             $( "#content" ).html("atualizando um entry: " + data.result);
         });
@@ -134,23 +162,29 @@ function deleteEntry(){
     
 $( document ).ready(function() {
 
+    if(getParameter("id") != null){
+        getEntry(getParameter("id"));
+    } else {
+        getEntries();
+    }
+
     console.log( "document loaded" );
-    
 });
     
 
 </script>
 
-    
 <body>
     
-    <input type="button" value="get entry" onclick="getEntry()">
-    <input type="button" value="get entries" onclick="getEntries()">
-    <input type="button" value="post entry" onclick="show_add_entry_form()">
     <input type="button" value="put entry" onclick="putEntry()">
     <input type="button" value="delete entry" onclick="deleteEntry()">
+    
+    <div class=page>
+        
+        <h1>Flaskr</h1>
 
-    <div id="content">
+        <div id="content">
+        </div>
     </div>
 
 </body>
