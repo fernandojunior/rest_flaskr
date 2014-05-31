@@ -76,85 +76,89 @@ EntryManager = Class.extend({
         return result;
     }
     
-})
+});
 
-entryManager = new EntryManager();
-
-// Views
+EntryView = Class.extend({
     
-function getEntry(id){
+    template_path: "http://127.0.0.1:5000/static/site/templates/",
 
-    entry = entryManager.get(id);
+    init: function(objects){
+        view = this; // prevenindo conflitos
+        view.objects = objects;
+    },
     
-    $("#content").html(render_template(TEMPLATE_URL + "entry.mustache", entry));
-    
-    $("button#edit_entry").click(function(){
-        putEntry("get", id);
-    });
+    render_template: function(template_name, data) {        
+        template_name = view.template_path + template_name + ".mustache";        
+        return render_template(template_name, data);
+    },
 
-}
+    get: function(id){
+        if (typeof(id) === "undefined" || id == null) {
 
-function getEntries(){
+            var entries = view.objects.get();
+            $( "#content" ).html(view.render_template("entries", entries));
 
-    var entries = entryManager.get();
+            $("form#add_entry").submit(function(event){
+                event.preventDefault();
+                view.post(form_to_dict(this));
+                return true;
+            });
 
-    $( "#content" ).html(render_template(TEMPLATE_URL + "entries.mustache", entries));
+        } else {
+            
+            entry = view.objects.get(id);
+            $("#content").html(view.render_template("entry", entry));
 
-    $("form#add_entry").submit(function(event){
-        event.preventDefault();
-        postEntry(form_to_dict(this));
-        return true;
-    });
-}
+            $("button#edit_entry").click(function(){
+                view.put("get", id);
+            });
 
-function postEntry(dic){
-    
-    entryManager.post(dic);
-    
-    getEntries(); // redirect
-}
-    
-function putEntry(method, id, dic) {
+        }
+    },
 
-    if(method == "get") {
+    post: function(data) {
+        view.objects.post(data);
+        view.get();
+    },
 
-        entry = entryManager.get(id);
+    put: function(method, id, data){
 
-        $("#content").html(render_template(TEMPLATE_URL + "edit_entry.mustache", entry));
+        if(method == "get") {
 
-        $("form#edit_entry").submit(function(event){
-            event.preventDefault();
-            putEntry("put", id, form_to_dict(this));
-            return true;
-        });
+            entry = view.objects.get(id);
+            $("#content").html(view.render_template("edit_entry", entry));
 
-    } else if (method == "put") {
-        
-        result = entryManager.put(id, dic);
-        
-        console.log("entry " + id + " atualizado com sucesso. RESULT: " + result.result);
-        
-        getEntries(); // redirect
+            $("form#edit_entry").submit(function(event){
+                event.preventDefault();
+                view.put("put", id, form_to_dict(this)); // redirect recursivo com o method "put"
+                return true;
+            });
+
+        } else if (method == "put") {
+            result = view.objects.put(id, data);
+            console.log("entry " + id + " atualizado com sucesso. RESULT: " + result.result);
+            view.get();
+        }
+
+    },
+
+    delete: function(id) {    
+        result = view.objects.delete(id);    
+        console.log("entry " + id + " deletado com sucesso. RESULT: " + result.result);
+        view.get();
     }
 
-}
-
-function deleteEntry(id){
-
-    result = entryManager.delete(id);
+});
     
-    console.log("entry " + id + " deletado com sucesso. RESULT: " + result.result);
-    
-    getEntries(); // redirect
+entryObjects = new EntryManager();
+entryView = new EntryView(entryObjects);
 
-}
-    
 $( document ).ready(function() {
 
     if(getParameter("id") != null){
-        getEntry(getParameter("id"));
+        entryView.get(getParameter("id"));
     } else {
-        getEntries();
+        entryView.get();
     }
 
     console.log( "document loaded" );
