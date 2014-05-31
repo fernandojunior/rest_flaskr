@@ -4,6 +4,7 @@
 <link rel=stylesheet type=text/css href="../style.css">
 <script src="../jquery.js"></script>
 <script src="../mustache.js"></script>
+<script src="../class.js"></script>
 <script src="../mine.js"></script>
 
 <script>
@@ -11,65 +12,113 @@
 var BASE_URL = "http://127.0.0.1:5000/api/1.0";
 var TEMPLATE_URL = "http://127.0.0.1:5000/static/site/templates/";
     
-function _getEntry(id){
-    
-    var entry, uri = BASE_URL + '/entries/' + id;
-    
-    ajax({url: uri, type: "get", async: false})
-        .done(function(data) {
-            entry = data;
-        });
+EntryManager = Class.extend({
 
-    return entry;
+    root_path: "http://127.0.0.1:5000/api/1.0/entries/",
     
-}
+    get: function(id){
+
+        var result;
+
+        if (typeof(id) === "undefined" || id == null) {
+
+            ajax({url: this.root_path, type: "get", async: false})
+                .done(function(data) {
+                    result = data;
+                });
+
+        } else {
+
+            ajax({url: this.root_path + id, type: "get", async: false})
+                .done(function(data) {
+                    result = data;
+                });
+
+        }
+        
+        return result;
+
+    },
+
+    post: function(data) {
+        
+        var result;
+        
+        ajax({url: this.root_path, type: "post", data: data, async: false})
+            .done(function(data){
+                result = data;
+            });
+        
+        return result;
+    },
+
+    put: function(id, data) {
+        
+        var result;
+        
+        ajax({url: this.root_path + id, type: "put", data: data, async: false})
+            .done(function(data){
+                result = data;
+            });
+        
+        return result;
+    },
+
+    delete: function(id) {
+
+        var result;
+
+        ajax({url: this.root_path + id, type: "delete", async: false})
+            .done(function(data){
+                result = data;
+            });
+
+        return result;
+    }
+    
+})
+
+entryManager = new EntryManager();
+
+// Views
     
 function getEntry(id){
 
-    var uri = BASE_URL + '/entries/' + id;
+    entry = entryManager.get(id);
+    
+    $("#content").html(render_template(TEMPLATE_URL + "entry.mustache", entry));
+    
+    $("button#edit_entry").click(function(){
+        putEntry("get", id);
+    });
 
-    ajax({url: uri, type: "get"})
-        .done(function(data) {
-            $("#content").html(render_template(TEMPLATE_URL + "entry.mustache", data));
-
-            $("button#edit_entry").click(function(){
-                putEntry("get", id);
-            });
-        });
 }
 
 function getEntries(){
 
-    var uri = BASE_URL + '/entries/';
+    var entries = entryManager.get();
 
-    ajax({url: uri, type: "get"})
-        .done(function(data){
-            $( "#content" ).html(render_template(TEMPLATE_URL + "entries.mustache", data));
-            
-            $("form#add_entry").submit(function(event){
-                event.preventDefault();
-                postEntry(form_to_dict(this));
-                return true;
-            });
+    $( "#content" ).html(render_template(TEMPLATE_URL + "entries.mustache", entries));
 
-        });
+    $("form#add_entry").submit(function(event){
+        event.preventDefault();
+        postEntry(form_to_dict(this));
+        return true;
+    });
 }
 
 function postEntry(dic){
     
-    var uri = BASE_URL + '/entries/';
+    entryManager.post(dic);
     
-    ajax({url: uri, type: "post", data: dic})
-        .done(function(data){
-            getEntries();
-        });
+    getEntries(); // redirect
 }
     
 function putEntry(method, id, dic) {
 
     if(method == "get") {
 
-        entry = _getEntry(id);
+        entry = entryManager.get(id);
 
         $("#content").html(render_template(TEMPLATE_URL + "edit_entry.mustache", entry));
 
@@ -80,25 +129,24 @@ function putEntry(method, id, dic) {
         });
 
     } else if (method == "put") {
+        
+        result = entryManager.put(id, dic);
+        
+        console.log("entry " + id + " atualizado com sucesso. RESULT: " + result.result);
+        
+        getEntries(); // redirect
+    }
 
-        var uri = BASE_URL + '/entries/' + id;
-
-        ajax({url: uri, type: method, data: dic})
-            .done(function(data){
-                console.log("entry " + id + " atualizado com sucesso. RESULT: " + data.result);                
-                getEntries();
-            });
-    }    
 }
+
+function deleteEntry(id){
+
+    result = entryManager.delete(id);
     
-function deleteEntry(){
+    console.log("entry " + id + " deletado com sucesso. RESULT: " + result.result);
     
-    var uri = BASE_URL + '/entries/2';
-    
-    ajax({url: uri, type: "delete"})
-        .done(function(data){
-            $( "#content" ).html("deletando um entry: " + data.result);
-        });
+    getEntries(); // redirect
+
 }
     
 $( document ).ready(function() {
