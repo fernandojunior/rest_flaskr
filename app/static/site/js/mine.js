@@ -11,6 +11,27 @@ function getParameter(name) {
 }
 
 /**
+ * Retorna todos os parametros da url em um dicionario
+ * @ref http://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
+**/
+function getParameters() {
+    
+    var transformToAssocArray = function(prmstr) {
+        var params = {};
+        var prmarr = prmstr.split("&");
+        for ( var i = 0; i < prmarr.length; i++) {
+            var tmparr = prmarr[i].split("=");
+            params[tmparr[0]] = tmparr[1];
+        }
+        return params;
+    }
+    
+    var prmstr = window.location.search.substr(1);
+    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+}
+
+
+/**
  * Funcao que retorna um template .mustache
  * @param template_name Nome do template (obs. URI)
 **/
