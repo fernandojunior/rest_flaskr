@@ -1,4 +1,16 @@
 /**
+ * Verifica se o tipo de um objeto eh indefinido
+**/
+function utype(obj){
+    
+    if(typeof(obj) === "undefined"){
+        return true;
+    }
+    return false;
+}
+
+
+/**
  * Retorna o valor de um parametro da url
  * @param name Nome do parametro
  * @ref http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
