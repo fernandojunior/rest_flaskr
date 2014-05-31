@@ -97,3 +97,71 @@ function ajax(dict) {
     return $.ajax(request);
 
 }
+
+BaseManager = Class.extend ({
+
+    init: function(api_root_path) {
+        this.root_path = api_root_path;
+    },
+    
+    get: function(id) {
+
+        var result;
+
+        if (typeof(id) === "undefined" || id == null) {
+
+            ajax({url: this.root_path, type: "get", async: false})
+                .done(function(data) {
+                    result = data;
+                });
+
+        } else {
+
+            ajax({url: this.root_path + id, type: "get", async: false})
+                .done(function(data) {
+                    result = data;
+                });
+
+        }
+        
+        return result;
+
+    },
+
+    post: function(data) {
+        
+        var result;
+        
+        ajax({url: this.root_path, type: "post", data: data, async: false})
+            .done(function(data){
+                result = data;
+            });
+        
+        return result;
+    },
+
+    put: function(id, data) {
+        
+        var result;
+        
+        ajax({url: this.root_path + id, type: "put", data: data, async: false})
+            .done(function(data){
+                result = data;
+            });
+        
+        return result;
+    },
+
+    delete: function(id) {
+
+        var result;
+
+        ajax({url: this.root_path + id, type: "delete", async: false})
+            .done(function(data){
+                result = data;
+            });
+
+        return result;
+    }
+    
+});
