@@ -35,7 +35,8 @@ EntryView = Class.extend({
         if (typeof(id) === "undefined" || id == null) {
 
             var entries = view.objects.get();
-            $( "#content" ).html(view.render_template("entries", entries));
+
+            $("#content").html(view.render_template("entries", entries));
 
             $("form#add_entry").submit(function(event){
                 event.preventDefault();
@@ -49,30 +50,36 @@ EntryView = Class.extend({
             $("#content").html(view.render_template("entry", entry));
 
             $("button#edit_entry").click(function(){
-                view.put("get", id);
+                view.edit_form(id); // ou view.put("get", id)
             });
 
         }
     },
-
+    
     post: function(data) {
         view.objects.post(data);
         view.get();
+    },
+    
+    edit_form: function(id){
+
+        entry = view.objects.get(id);
+        $("#content").html(view.render_template("edit_entry", entry));
+
+        $("form#edit_entry").submit(function(event){
+            event.preventDefault();
+            view.put("put", id, form_to_dict(this));
+            return true;
+        });
+  
     },
 
     put: function(method, id, data){
 
         if(method == "get") {
-
-            entry = view.objects.get(id);
-            $("#content").html(view.render_template("edit_entry", entry));
-
-            $("form#edit_entry").submit(function(event){
-                event.preventDefault();
-                view.put("put", id, form_to_dict(this)); // redirect recursivo com o method "put"
-                return true;
-            });
-
+            
+            edit_form(id);
+            
         } else if (method == "put") {
             result = view.objects.put(id, data);
             console.log("entry " + id + " atualizado com sucesso. RESULT: " + result.result);
@@ -81,7 +88,7 @@ EntryView = Class.extend({
 
     },
 
-    delete: function(id) {    
+    delete: function(id) {
         result = view.objects.delete(id);    
         console.log("entry " + id + " deletado com sucesso. RESULT: " + result.result);
         view.get();

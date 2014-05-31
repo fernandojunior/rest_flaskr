@@ -98,8 +98,15 @@ function ajax(dict) {
 
 }
 
+/**
+ * Gerenciador de objetos (RESTFUL)
+**/
 BaseManager = Class.extend ({
 
+    /**
+     * Inicializa o objeto
+     * @param api_root_path URL principal da API REST
+    **/
     init: function(api_root_path) {
         this.root_path = api_root_path;
     },
