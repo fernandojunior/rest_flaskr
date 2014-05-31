@@ -63,17 +63,31 @@ function form_to_dict(form) {
  * @param method Metodo HTTP da requisicao
  * @param data Dados a serem anexados na requisicao (que seram transformados em json)
 **/
-function ajax(uri, method, data) {
+function ajax(dict) {
     
+    if (typeof(dict.type) === "undefined") {
+        dict.type = "get";
+    }
+    
+    if (typeof(dict.data) === "undefined") {
+        dict.data = null;
+    } else {
+        dict.data = JSON.stringify(dict.data);
+    }
+    
+    if (typeof(dict.async) === "undefined") { 
+        dict.async = true;
+    }
+
     var request = {
-        url: uri,
-        type: method,
+        url: dict.url,
+        type: dict.type,
+        async: dict.async,
         contentType: "application/json",
         accepts: "application/json",
         cache: false,
         dataType: 'json',
-        data: JSON.stringify(data),
-
+        data: dict.data,
         error: function (jqXHR) {
             console.log("ajax error " + jqXHR.status);
         }

@@ -5,28 +5,44 @@
 <script src="../jquery.js"></script>
 <script src="../mustache.js"></script>
 <script src="../mine.js"></script>
-    
 
 <script>
 
 var BASE_URL = "http://127.0.0.1:5000/api/1.0";
 var TEMPLATE_URL = "http://127.0.0.1:5000/static/site/templates/";
     
+function _getEntry(id){
+    
+    var entry, uri = BASE_URL + '/entries/' + id;
+    
+    ajax({url: uri, type: "get", async: false})
+        .done(function(data) {
+            entry = data;
+        });
+
+    return entry;
+    
+}
+    
 function getEntry(id){
-    
+
     var uri = BASE_URL + '/entries/' + id;
-    
-    ajax(uri, "get")
+
+    ajax({url: uri, type: "get"})
         .done(function(data) {
             $("#content").html(render_template(TEMPLATE_URL + "entry.mustache", data));
+
+            $("button#edit_entry").click(function(){
+                putEntry("get", id);
+            });
         });
 }
 
 function getEntries(){
-    
+
     var uri = BASE_URL + '/entries/';
 
-    ajax(uri, "get")
+    ajax({url: uri, type: "get"})
         .done(function(data){
             $( "#content" ).html(render_template(TEMPLATE_URL + "entries.mustache", data));
             
@@ -43,27 +59,43 @@ function postEntry(dic){
     
     var uri = BASE_URL + '/entries/';
     
-    ajax(uri, "post", dic)
+    ajax({url: uri, type: "post", data: dic})
         .done(function(data){
             getEntries();
         });
 }
     
-function putEntry(dic){
-    
-    var uri = BASE_URL + '/entries/3';
-    
-    ajax(uri, "put", dic)
-        .done(function(data){
-            $( "#content" ).html("atualizando um entry: " + data.result);
+function putEntry(method, id, dic) {
+
+    if(method == "get") {
+
+        entry = _getEntry(id);
+
+        $("#content").html(render_template(TEMPLATE_URL + "edit_entry.mustache", entry));
+
+        $("form#edit_entry").submit(function(event){
+            event.preventDefault();
+            putEntry("put", id, form_to_dict(this));
+            return true;
         });
+
+    } else if (method == "put") {
+
+        var uri = BASE_URL + '/entries/' + id;
+
+        ajax({url: uri, type: method, data: dic})
+            .done(function(data){
+                console.log("entry " + id + " atualizado com sucesso. RESULT: " + data.result);                
+                getEntries();
+            });
+    }    
 }
     
 function deleteEntry(){
     
     var uri = BASE_URL + '/entries/2';
     
-    ajax(uri, "delete")
+    ajax({url: uri, type: "delete"})
         .done(function(data){
             $( "#content" ).html("deletando um entry: " + data.result);
         });
@@ -79,13 +111,11 @@ $( document ).ready(function() {
 
     console.log( "document loaded" );
 });
-    
 
 </script>
 
 <body>
     
-    <input type="button" value="put entry" onclick="putEntry()">
     <input type="button" value="delete entry" onclick="deleteEntry()">
     
     <div class=page>
