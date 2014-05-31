@@ -1,11 +1,11 @@
 <!doctype html>
 <html>
 <title>Flaskr</title>
-<link rel=stylesheet type=text/css href="../style.css">
-<script src="../jquery.js"></script>
-<script src="../mustache.js"></script>
-<script src="../class.js"></script>
-<script src="../mine.js"></script>
+<link rel=stylesheet type=text/css href="style.css">
+<script src="js/jquery.js"></script>
+<script src="js/mustache.js"></script>
+<script src="js/class.js"></script>
+<script src="js/mine.js"></script>
 
 <script>
 
@@ -25,7 +25,7 @@ EntryView = Class.extend({
         view = this; // prevenindo conflitos
         view.objects = objects;
     },
-    
+
     render_template: function(template_name, data) {        
         template_name = view.template_path + template_name + ".mustache";        
         return render_template(template_name, data);
@@ -44,7 +44,7 @@ EntryView = Class.extend({
             });
 
         } else {
-            
+
             entry = view.objects.get(id);
             $("#content").html(view.render_template("entry", entry));
 
@@ -88,11 +88,12 @@ EntryView = Class.extend({
     }
 
 });
-    
-entryObjects = new EntryManager();
-entryView = new EntryView(entryObjects);
+
 
 $( document ).ready(function() {
+
+    entryObjects = new EntryManager(); // ou new BaseManager("http://127.0.0.1:5000/api/1.0/entries/")
+    entryView = new EntryView(entryObjects);
 
     if(getParameter("id") != null){
         entryView.get(getParameter("id"));
