@@ -9,103 +9,122 @@
 
 <script>
 
-EntryManager = BaseManager.extend({
+EntryManager = AsyncBaseManager.extend({
 
     init: function(){
-        this._super("http://127.0.0.1:5000/api/1.0/entries/");
+        this._super({api_url: "http://127.0.0.1:5000/api/1.0/entries/", async: true});
     }
-    
+
 });
-    
-EntryView = Class.extend({
+
+EntryViews = Class.extend({
 
     template_container: "http://127.0.0.1:5000/static/site/templates/",
 
-    init: function(objects){
-        view = this; // prevenindo conflitos
-        view.objects = objects; // manager
+    init: function(api){
+        this.api = api; // api manager
+        self = this;
     },
 
-    render_template: function(template_name, data) {        
-        template_name = view.template_container + template_name + ".mustache";
-        return render_template(template_name, data);
+    render: function(template_name, data) {
+        return template.render(self.template_container + template_name + ".mustache", data);
     },
-
+    
     get_index: function(){
+        
+        var callback = function(response){
 
-        var entries = view.objects.get();
-        $("#content").html(view.render_template("entries", entries));
+            var content = self.render("entries", response);
 
-        $("form#add_entry").submit(function(event){
-            event.preventDefault();
-            view.post(form_to_dict(this));
-            return true;
-        });
+            $("#content").html(content);
+
+            $("form#add_entry").submit(function(e){
+                e.preventDefault();
+                self.post({data: form_to_dict(e.target)});
+                return true;
+            });
+        };
+
+        self.api.get({}, callback);
 
     },
 
     get: function(args){
+        var id = args.id;
 
-        if(utype(args) || utype(args.id) || args.id === null){
-            return view.get_index();
+        if(utype(args) || utype(id) || id === null){
+            return self.get_index();
         }
 
-        id = args.id;
+        var callback = function(response){
 
-        entry = view.objects.get(id);
-        $("#content").html(view.render_template("entry", entry));
+            $("#content").html(self.render("entry", response));
 
-        $("button#edit_entry").click(function(){
-            view.get_edit_form({id: id}); // ou view.put("get", id)
-        });
+            $("button#edit_entry").click(function(){
+                self.get_edit_form({id: id});
+            });
 
-        $("button#delete_entry").click(function(){
-            view.delete({id: id});
-        });
+            $("button#delete_entry").click(function(){
+                self.delete({id: id});
+            });
+
+        };
+
+        self.api.get({id: id}, callback);
 
     },
 
     post: function(args) {
-        view.objects.post(args);
-        view.get();
+        var data = args.data;
+
+        self.api.post({data: data});
+        self.get_index();
     },
 
     get_edit_form: function(args){
+        var id = args.id;
 
-        id = args.id;
+        var callback = function(response){
 
-        entry = view.objects.get(id);
-        $("#content").html(view.render_template("edit_entry", entry));
+            $("#content").html(self.render("edit_entry", response));
 
-        $("form#edit_entry").submit(function(event){
-            event.preventDefault();
-            view.put({method: "put", id: id, data: form_to_dict(this)});
-            return true;
-        });
+            $("form#edit_entry").submit(function(e){
+                e.preventDefault();
+
+                self.put({
+                    id: id,
+                    data: form_to_dict(e.target)
+                });                
+                return true;
+            });
+        }
+        
+        self.api.get({id: id}, callback);
 
     },
 
     put: function(args){
+        var id = args.id;
+        var data = args.data;
 
-        method = args.method;
-        id = args.id;
-        data = args.data;
-
-        if(method == "get") {            
-            view.get_edit_form({id: id});            
-        } else if (method == "put") {
-            result = view.objects.put(id, data);
-            console.log("Entry " + id + " atualizado com sucesso. RESULT: " + result.result);
-            view.get();
+        var callback = function(response){
+            console.log("Entry " + id + " atualizado com sucesso. RESULT: " + response.result);
+            self.get_index();   
         }
+
+        self.api.put({id: id, data: data}, callback);
 
     },
 
     delete: function(args) {
-        id = args.id;
-        result = view.objects.delete(id);
-        console.log("Entry " + id + " deletado com sucesso. RESULT: " + result.result);
-        view.get();
+        var id = args.id;
+
+        var callback = function(response){
+            console.log("Entry " + id + " deletado com sucesso. RESULT: " + response.result);
+            self.get_index();
+        }
+
+        self.api.delete({id: id}, callback);
     },
 
     /**
@@ -114,26 +133,24 @@ EntryView = Class.extend({
      * @args.action Nome de um action especifico a ser solicitado. Default = get
     **/
     action: function(args){
+        var action = args.action;
 
-        var action_name = args.action;
-
-        if (utype(action_name)) {
-            action_name = "get";
-        } else if (action_name != "get"){
-            action_name = "get_" + action_name;
+        if (utype(action)) {
+            action = "get";
+        } else if (action != "get"){
+            action = "get_" + action;
         }
 
-        result = view[action_name](args); // chamando metodo publico (get) da view (action) de forma reflexiva
-        return result;
+        return self[action](args); // chamando metodo publico (get) da view (action) de forma reflexiva
     }
 
 });
 
 $( document ).ready(function() {
 
-    entryObjects = new EntryManager(); // ou new BaseManager("http://127.0.0.1:5000/api/1.0/entries/")
-    entryView = new EntryView(entryObjects);
-    entryView.action(getParameters()); // requisitando view action conforme parametros da url
+    api = new EntryManager(); // entry objects manager
+    views = new EntryViews(api); // entry views 
+    views.action(getParameters()); // requisitando view action conforme parametros da url
 
     console.log( "document loaded" );
 });

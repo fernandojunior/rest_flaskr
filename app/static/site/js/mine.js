@@ -1,14 +1,23 @@
+// funcoes de utilidade
+
 /**
- * Verifica se o tipo de um objeto eh indefinido
+* Verifica se o tipo de um objeto eh indefinido
 **/
 function utype(obj){
-    
     if(typeof(obj) === "undefined"){
-        return true;
+            return true;
     }
-    return false;
+        return false;
 }
 
+/**
+ * Roda uma funcao com os argumentos passados
+**/
+function run(callback, args){
+    if (typeof(callback) !== "undefined"){
+        callback(args);                    
+    }
+}
 
 /**
  * Retorna o valor de um parametro da url
@@ -21,13 +30,13 @@ function getParameter(name) {
         results = regex.exec(location.search);
     return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
-
+    
 /**
  * Retorna todos os parametros da url em um dicionario
  * @ref http://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
 **/
 function getParameters() {
-    
+
     var transformToAssocArray = function(prmstr) {
         var params = {};
         var prmarr = prmstr.split("&");
@@ -37,44 +46,11 @@ function getParameters() {
         }
         return params;
     }
-    
+
     var prmstr = window.location.search.substr(1);
     return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
 }
-
-
-/**
- * Funcao que retorna um template .mustache
- * @param template_name Nome do template (obs. URI)
-**/
-function get_template(template_name) {
     
-    var url = template_name, template = "";
-    
-    $.ajax({
-        url: url,
-        type: 'GET',
-        async: false,
-        success: function (data) {
-            template = data;
-        }
-    });
-    
-    Mustache.parse(template);
-
-    return template;
-}
-
-/**
- * Renderiza um template com os dados (em json) fornecidos
- * @param template_name Nome do template
- * @param data Dados a serem renderizados no template
-**/
-function render_template(template_name, data) {
-    var template = get_template(template_name);
-    return Mustache.render(template, data);
-}
-
 /**
  * Serializa os dados de um formulario em um dicionario
  * @param form O formulario a ser serializado (como elemento jQuery)
@@ -90,6 +66,41 @@ function form_to_dict(form) {
     return dict;
 }
 
+// funcoes de template
+var template = {
+    /**
+     * Funcao que retorna um template .mustache
+     * @param url Nome do template (obs. URI)
+    **/
+    get: function(url) {
+
+        var url = url, template = "";
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            async: false,
+            success: function (data) {
+                template = data;
+            }
+        });
+
+        Mustache.parse(template);
+
+        return template;
+    },
+    
+    /**
+     * Renderiza um template com os dados (em json) fornecidos
+     * @param template_name Nome do template
+     * @param data Dados a serem renderizados no template
+    **/
+    render: function(template_name, data) {
+        var template = this.get(template_name);
+        return Mustache.render(template, data);
+    }, 
+}
+
 /**
  * Auxilia a fazer requisicoes assincronas
  * @param uri Recurso da requisicao
@@ -97,17 +108,17 @@ function form_to_dict(form) {
  * @param data Dados a serem anexados na requisicao (que seram transformados em json)
 **/
 function ajax(dict) {
-    
+
     if (typeof(dict.type) === "undefined") {
         dict.type = "get";
     }
-    
+
     if (typeof(dict.data) === "undefined") {
         dict.data = null;
     } else {
         dict.data = JSON.stringify(dict.data);
     }
-    
+
     if (typeof(dict.async) === "undefined") { 
         dict.async = true;
     }
@@ -124,84 +135,104 @@ function ajax(dict) {
         error: function (jqXHR) {
             console.log("ajax error " + jqXHR.status);
         }
-    
+
     };
-    
+
     return $.ajax(request);
 
 }
 
 /**
- * Gerenciador de objetos (RESTFUL)
+ * Gerenciador de objetos REST Assincrono
 **/
-BaseManager = Class.extend ({
-
+AsyncBaseManager = Class.extend ({
+    
     /**
      * Inicializa o objeto
-     * @param api_root_path URL principal da API REST
+     * @param api_url URL principal da API REST
+     * @param async Se for true, as requisoes seram assincronas, caso for false seram sincronas. Default = true
     **/
-    init: function(api_root_path) {
-        this.root_path = api_root_path;
+    init: function(args) {        
+        this.api_url = args.api_url;
+        this.async = args.async;
+        
+        if (typeof(this.async) === "undefined")
+            this.async = true;
+        
     },
     
-    get: function(id) {
+    get: function(args, callback) {        
+        var id = args.id;
 
         var result;
 
         if (typeof(id) === "undefined" || id == null) {
 
-            ajax({url: this.root_path, type: "get", async: false})
+            ajax({url: this.api_url, type: "get", async: this.async})
                 .done(function(data) {
-                    result = data;
+                    result = data;                    
+                    run(callback, data);
                 });
 
         } else {
 
-            ajax({url: this.root_path + id, type: "get", async: false})
+            ajax({url: this.api_url + id, type: "get", async: this.async})
                 .done(function(data) {
                     result = data;
+                    run(callback, data);
                 });
 
         }
-        
-        return result;
+
+        if(this.async === false)
+            return result;
 
     },
 
-    post: function(data) {
-        
+    post: function(args, callback) {
+        var data = args.data;
+
         var result;
-        
-        ajax({url: this.root_path, type: "post", data: data, async: false})
+
+        ajax({url: this.api_url, type: "post", data: data, async: this.async})
             .done(function(data){
                 result = data;
+                run(callback, data);                
             });
-        
-        return result;
+
+        if(this.async === false)
+            return result;
     },
 
-    put: function(id, data) {
+    put: function(args, callback) {        
+        var id = args.id;
+        var data = args.data;
         
         var result;
         
-        ajax({url: this.root_path + id, type: "put", data: data, async: false})
+        ajax({url: this.api_url + id, type: "put", data: data, async: this.async})
             .done(function(data){
                 result = data;
+                run(callback, data);                
             });
         
-        return result;
+        if(this.async === false)
+            return result;
     },
 
-    delete: function(id) {
+    delete: function(args, callback) {    
+        var id = args.id;
 
         var result;
 
-        ajax({url: this.root_path + id, type: "delete", async: false})
+        ajax({url: this.api_url + id, type: "delete", async: false})
             .done(function(data){
                 result = data;
+                run(callback, data);
             });
 
-        return result;
+        if(this.async === false)
+            return result;
     }
     
 });
