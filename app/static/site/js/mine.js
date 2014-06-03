@@ -13,9 +13,9 @@ function utype(obj){
 /**
  * Roda uma funcao com os argumentos passados
 **/
-function run(callback, args){
-    if (typeof(callback) !== "undefined"){
-        callback(args);                    
+function run(func, args){
+    if (typeof(func) !== "undefined"){
+        func(args);                    
     }
 }
 
@@ -161,12 +161,16 @@ AsyncBaseManager = Class.extend ({
         
     },
     
-    get: function(args, callback) {        
+    get: function(args, callback) {
         var id = args.id;
+        
+        console.log("initializing get manager function. api_url " + this.api_url);
 
         var result;
 
-        if (typeof(id) === "undefined" || id == null) {
+        if (typeof(id) === "undefined" || id === null) {
+
+            console.log("json api_url " + this.api_url);
 
             ajax({url: this.api_url, type: "get", async: this.async})
                 .done(function(data) {
@@ -229,10 +233,100 @@ AsyncBaseManager = Class.extend ({
             .done(function(data){
                 result = data;
                 run(callback, data);
-            });
+            });   
 
         if(this.async === false)
             return result;
-    }
+    },
+
+    _factory: function(args){
+        var factory = args.factory;
+        var data = args.data;
+        var callback = args.callback;
+        
+        if(factory == null || typeof(factory) === "undefined") {
+            factory = "get"; // default factory
+        }
+        
+        if(data === null || typeof(data) === "undefined") {
+            data = {};        
+        }
     
+        this[factory](data, callback);
+
+    }
+
 });
+
+var BaseView = Class.extend({
+    api: null, // nome do metodo da api a ser invocada
+    init: null, // construtor/inicializador da view
+    data: null, // dados a serem passados a api
+    before: null, // funcao que roda antes de invocar o metodo. Se retornar true, metodo eh invocado.
+    callback: null, // callback a ser invocado com a resposta da api como argumento    
+    after: null // funcao que eh invocada logo apos o metodo
+}); 
+
+var view = {
+ 
+    run: function (view_class, args, manager) {
+        view = new view_class(args); // instanciando view
+
+        var before_result = true;
+        if (view.before !== null && typeof(view.before) !== "undefined"){
+            console.log("running before function");
+            before_result = view.before();
+            console.log("before result " + before_result );
+        }
+
+        console.log("view data: " + JSON.stringify(view.data));
+
+        if(before_result === true){        
+            manager._factory({
+                factory: view.api,
+                data: view.data,
+                callback: view.callback
+            });
+
+            if (view.after !== null && typeof(view.after) !== "undefined"){
+                view.after();
+            }
+        }
+
+    },
+    
+    run_from: function(views, view_name, args) {
+    
+        if (args === null || typeof(args) === "undefined"){
+            args = {};
+        }
+        
+        console.log("gettinng view: " + view_name);
+        console.log("view args: " + JSON.stringify(args));
+        
+        obj_view = new views[view_name](args); // instanciando view
+
+        var before_result = true;
+        if (obj_view.before !== null && typeof(obj_view.before) !== "undefined"){
+            console.log("running before function");
+            before_result = obj_view.before();
+            console.log("before result " + before_result );
+        }
+
+        console.log("view data: " + JSON.stringify(obj_view.data));
+
+        if(before_result === true){        
+            views.manager._factory({
+                factory: obj_view.api,
+                data: obj_view.data,
+                callback: obj_view.callback
+            });
+
+            if (obj_view.after !== null && typeof(obj_view.after) !== "undefined"){
+                obj_view.after();
+            }
+        }
+
+    }
+
+}
