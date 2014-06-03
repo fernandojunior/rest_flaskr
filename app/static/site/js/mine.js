@@ -269,33 +269,31 @@ var BaseView = Class.extend({
 
 var view = {
  
-    run: function (view_class, args, manager) {
-        view = new view_class(args); // instanciando view
+    render: function (view_class, args, manager) {
+        obj = new view_class(args); // instanciando view
 
         var before_result = true;
-        if (view.before !== null && typeof(view.before) !== "undefined"){
+        if (obj.before !== null && typeof(obj.before) !== "undefined"){
             console.log("running before function");
-            before_result = view.before();
+            before_result = obj.before();
             console.log("before result " + before_result );
         }
 
-        console.log("view data: " + JSON.stringify(view.data));
-
         if(before_result === true){        
             manager._factory({
-                factory: view.api,
-                data: view.data,
-                callback: view.callback
+                factory: obj.api,
+                data: obj.data,
+                callback: obj.callback
             });
 
-            if (view.after !== null && typeof(view.after) !== "undefined"){
-                view.after();
+            if (obj.after !== null && typeof(obj.after) !== "undefined"){
+                obj.after();
             }
         }
 
     },
     
-    run_from: function(views, view_name, args) {
+    render_from: function(views, view_name, args) {
     
         if (args === null || typeof(args) === "undefined"){
             args = {};
@@ -303,30 +301,12 @@ var view = {
         
         console.log("gettinng view: " + view_name);
         console.log("view args: " + JSON.stringify(args));
+
+        var manager = views.manager;
+        var view_class = views[view_name];        
         
-        obj_view = new views[view_name](args); // instanciando view
-
-        var before_result = true;
-        if (obj_view.before !== null && typeof(obj_view.before) !== "undefined"){
-            console.log("running before function");
-            before_result = obj_view.before();
-            console.log("before result " + before_result );
-        }
-
-        console.log("view data: " + JSON.stringify(obj_view.data));
-
-        if(before_result === true){        
-            views.manager._factory({
-                factory: obj_view.api,
-                data: obj_view.data,
-                callback: obj_view.callback
-            });
-
-            if (obj_view.after !== null && typeof(obj_view.after) !== "undefined"){
-                obj_view.after();
-            }
-        }
-
+        view.render(view_class, args, manager);
+        
     }
 
 }

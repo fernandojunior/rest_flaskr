@@ -1,4 +1,4 @@
-<form id="add_entry" class=add-entry>
+<form action="#/" method="post" class=add-entry>
   <dl>
     <dt>Title:
       <dd><input type="text" size=30 name="title">
@@ -11,7 +11,9 @@
 <ul class=entries>
   {{ #entries }}
   <li>
-      <h2> <a href="?id={{ id }}"> {{ title }} </a> </h2>
+      <h2> <a href="#/{{ id }}">{{ title }}</a> </h2>
+      
+      
 
       {{ text }}
   

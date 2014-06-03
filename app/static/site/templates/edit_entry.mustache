@@ -1,4 +1,4 @@
-<form id="edit_entry" class=add-entry>
+<form action="#/{{ entry.id }}/edit" method="put" class=add-entry>
   <dl>
     <dt>Title:
       <dd><input type="text" size=30 name="title" value="{{ entry.title }}">
