@@ -1,56 +1,3 @@
-// funcoes de utilidade
-
-/**
-* Verifica se o tipo de um objeto eh indefinido
-**/
-function utype(obj){
-    if(typeof(obj) === "undefined"){
-            return true;
-    }
-        return false;
-}
-
-/**
- * Roda uma funcao com os argumentos passados
-**/
-function run(func, args){
-    if (typeof(func) !== "undefined"){
-        func(args);                    
-    }
-}
-
-/**
- * Retorna o valor de um parametro da url
- * @param name Nome do parametro
- * @ref http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-**/
-function getParameter(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-    
-/**
- * Retorna todos os parametros da url em um dicionario
- * @ref http://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
-**/
-function getParameters() {
-
-    var transformToAssocArray = function(prmstr) {
-        var params = {};
-        var prmarr = prmstr.split("&");
-        for ( var i = 0; i < prmarr.length; i++) {
-            var tmparr = prmarr[i].split("=");
-            params[tmparr[0]] = tmparr[1];
-        }
-        return params;
-    }
-
-    var prmstr = window.location.search.substr(1);
-    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
-}
-    
 /**
  * Serializa os dados de um formulario em um dicionario
  * @param form O formulario a ser serializado (como elemento jQuery)
@@ -143,149 +90,185 @@ function ajax(dict) {
 }
 
 /**
- * Gerenciador de objetos REST Assincrono
+ * Gerenciador de API RESTFUL basico assincrono.
 **/
-AsyncBaseManager = Class.extend ({
-    
+BaseManager = Class.extend ({
+
     /**
-     * Inicializa o objeto
-     * @param api_url URL principal da API REST
-     * @param async Se for true, as requisoes seram assincronas, caso for false seram sincronas. Default = true
+     * Inicializa o gerenciador
+     * @param root_path URL principal da API
+     * @param async (default === true) Se for true, as chamadas a api (requisoes) serao assincronas, caso for false serao sincronas.
     **/
     init: function(args) {        
-        this.api_url = args.api_url;
+        this.root_path = args.root_path;
         this.async = args.async;
         
-        if (typeof(this.async) === "undefined")
+        if (typeof(this.async) === "undefined"){
             this.async = true;
+        }
+        
+        if(this.root_path.charAt(this.root_path.length -1) !== "/"){
+            this.root_path += "/";
+        }
         
     },
     
     get: function(args, callback) {
         var id = args.id;
         
-        console.log("initializing get manager function. api_url " + this.api_url);
-
-        var result;
-
-        if (typeof(id) === "undefined" || id === null) {
-
-            console.log("json api_url " + this.api_url);
-
-            ajax({url: this.api_url, type: "get", async: this.async})
-                .done(function(data) {
-                    result = data;                    
-                    run(callback, data);
-                });
-
+        if (typeof(id) === "undefined") {
+            return this.call({url: "/"}, callback);
         } else {
-
-            ajax({url: this.api_url + id, type: "get", async: this.async})
-                .done(function(data) {
-                    result = data;
-                    run(callback, data);
-                });
-
+            return this.call({url: "/" + id}, callback);
         }
-
-        if(this.async === false)
-            return result;
 
     },
 
     post: function(args, callback) {
         var data = args.data;
 
-        var result;
-
-        ajax({url: this.api_url, type: "post", data: data, async: this.async})
-            .done(function(data){
-                result = data;
-                run(callback, data);                
-            });
-
-        if(this.async === false)
-            return result;
+        return this.call({url: "/", type: "post", data: data}, callback);
     },
 
     put: function(args, callback) {        
         var id = args.id;
         var data = args.data;
         
-        var result;
-        
-        ajax({url: this.api_url + id, type: "put", data: data, async: this.async})
-            .done(function(data){
-                result = data;
-                run(callback, data);                
-            });
-        
-        if(this.async === false)
-            return result;
+        return this.call({url: "/" + id, type: "put", data: data}, callback);
     },
 
     delete: function(args, callback) {    
         var id = args.id;
 
-        var result;
-
-        ajax({url: this.api_url + id, type: "delete", async: false})
-            .done(function(data){
-                result = data;
-                run(callback, data);
-            });   
-
-        if(this.async === false)
-            return result;
+        return this.call({url: "/" + id, type: "delete"}, callback);
     },
 
+    /**
+    * Chama uma url da API
+    * @param args.url (default === "") A url da api a ser chamada
+    * @param args.type (default === get) Tipo (http method) da chamada: get, post, put, delete
+    * @param args.data (opcional) Dicionario de dados a ser enviado pela chamada
+    * @param callback (opcional) Funcao de callback a ser executada com a resposta da api
+    * @return (if this.async === false) Retorna o resultado da chamada a api
+    **/
+    call: function(args, callback){
+        var url = args.url;
+        var type = args.type;
+        var data = args.data;
+
+        if (typeof(url) === "undefined"){
+            url = "";
+        }
+
+        if (url.charAt(0) === "/"){
+            url = url.substring(1, url.length);
+        }
+
+        var result;
+
+        ajax({url: this.root_path + url, type: type, data: data, async: this.async})
+            .done(function(reponse){
+                result = reponse;
+                
+                if (typeof(callback) !== "undefined"){
+                    callback(reponse);
+                }
+                
+            });   
+        
+        // observacao: resultado so existira se a assincronizacao estiver desativada, ou seja, this.async === false
+        return result;       
+    
+    },
+
+    /**
+    * Factory Method Partner para o objeto gerenciador
+    **/
     _factory: function(args){
-        var factory = args.factory;
+        var method = args.method;
         var data = args.data;
         var callback = args.callback;
         
-        if(factory == null || typeof(factory) === "undefined") {
-            factory = "get"; // default factory
+        if(method == null || typeof(method) === "undefined") {
+            method = "get"; // default method
         }
         
         if(data === null || typeof(data) === "undefined") {
-            data = {};        
+            data = {};
         }
     
-        this[factory](data, callback);
+        this[method](data, callback);
 
     }
 
 });
 
+/**
+ * Classe abstrata que define contratos para criar uma view
+**/
 var BaseView = Class.extend({
-    api: null, // nome do metodo da api a ser invocada
-    init: null, // construtor/inicializador da view
-    data: null, // dados a serem passados a api
-    before: null, // funcao que roda antes de invocar o metodo. Se retornar true, metodo eh invocado.
-    callback: null, // callback a ser invocado com a resposta da api como argumento    
-    after: null // funcao que eh invocada logo apos o metodo
-}); 
+    
+    /**
+    * Construtor/inicializador
+    **/
+    init: null,
+    
+    /**
+    * Nome do metodo da api a ser executado
+    **/
+    api: null, 
+    
+    /**
+    * Caso seja necessario, pode ser definido um dicionario em 'data' a ser passado como argumento ao metodo da api.
+    **/
+    data: null,
+    
+    /**
+    * (opcional) Funcao que eh executada antes do metodo da api ser executado.
+    * @return Se retornar true, metodo da api eh executado.
+    **/
+    before: null,
+    
+    /**
+    * (opcional) Funcao callback do metodo da api
+    * @param response Contem a resposta da execucao do metodo da api
+    **/
+    callback: null,
+    
+    /**
+    * (opcional) Funcao que eh executada apos o metodo da api
+    **/
+    after: null 
+});
 
+// funcoes de utilidade para views
 var view = {
  
+    /**
+    * Renderiza uma view
+    * @param view_class A classe (que extende de BaseView) da view
+    * @param args Argumentos que seram passadas ao construtor da view para ser inicializada
+    * @param manager API manager de onde a view ira requisitar/chamar por dados necessarios para sua renderizacao
+    **/
     render: function (view_class, args, manager) {
-        obj = new view_class(args); // instanciando view
+        obj = new view_class(args); // instanciando objeto do tipo BaseView
 
         var before_result = true;
+        
+        // funcao que eh executada antes do metodo da api ser executado
         if (obj.before !== null && typeof(obj.before) !== "undefined"){
-            console.log("running before function");
             before_result = obj.before();
-            console.log("before result " + before_result );
         }
 
-        if(before_result === true){        
+        // se for true, metodo da api eh executado
+        if(before_result === true){
             manager._factory({
-                factory: obj.api,
+                method: obj.api,
                 data: obj.data,
                 callback: obj.callback
             });
 
+            // funcao que eh executada apos o metodo da api
             if (obj.after !== null && typeof(obj.after) !== "undefined"){
                 obj.after();
             }
@@ -293,14 +276,17 @@ var view = {
 
     },
     
+    /**
+     * Renderiza a view de um container de views
+     * @param views O container
+     * @param view_name Nome da view a ser renderizada
+     * @param args Argumentos que seram passadas ao construtor da view para ser inicializada
+    **/
     render_from: function(views, view_name, args) {
     
         if (args === null || typeof(args) === "undefined"){
             args = {};
         }
-        
-        console.log("gettinng view: " + view_name);
-        console.log("view args: " + JSON.stringify(args));
 
         var manager = views.manager;
         var view_class = views[view_name];        

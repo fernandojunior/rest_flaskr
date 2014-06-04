@@ -2,43 +2,48 @@
 <html>
 <title>Flaskr</title>
 <link rel=stylesheet type=text/css href="style.css">
+    
+<!-- Vendors -->
 <script src="js/jquery.js"></script>
 <script src="js/mustache.js"></script>
-<script src="js/sammy.js"></script>    
-    
+<script src="js/sammy.js"></script>
 <script src="js/class.js"></script>
-<script src="js/mine.js"></script>
-<script src="js/views.js"></script>
     
+<!-- My libs -->
+<script src="js/mine.js"></script>
+
+<!-- Views -->
+<script src="views/entry.js"></script>
+
+<!-- Routes -->
 <script type="text/javascript" charset="utf-8">
-        
+
     var app = $.sammy(function() {
 
         this.get('#/', function() {            
-            view.render_from(EntryViews, "index");            
+            EntryViews.render("index");
         });
 
-        this.post('#/', function() {            
-            view.render_from(EntryViews, "post", {data: this.params});
+        this.post('#/', function() {
+            EntryViews.render("post", {data: this.params});
             this.redirect('#/');
         });
 
-        this.get('#/:id', function() {            
-             view.render_from(EntryViews, "get", {id: this.params['id']});            
+        this.get('#/:id', function() {
+            EntryViews.render("get", {id: this.params['id']});
         });
 
         this.get('#/:id/edit', function() { 
-            view.render_from(EntryViews, "get_edit_form", {id: this.params['id']});
+            EntryViews.render("get_edit_form", {id: this.params['id']});
         });
 
         this.put('#/:id/edit', function() { 
-            console.log("sammy " + JSON.stringify(this.params));
-            view.render_from(EntryViews, "put", {id: this.params['id'], data: this.params});
+            EntryViews.render("put", {id: this.params['id'], data: this.params});
             this.redirect('#/');            
         });
 
-        this.get('#/:id/delete', function() { 
-            view.render_from(EntryViews, "delete", {id: this.params['id']});
+        this.get('#/:id/delete', function() {
+            EntryViews.render("delete", {id: this.params['id']});
             this.redirect('#/');
         });
 

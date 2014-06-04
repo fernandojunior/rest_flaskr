@@ -1,7 +1,11 @@
 
 var EntryViews = {
     
-    manager: new AsyncBaseManager({api_url: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
+    manager: new BaseManager({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
+    
+    render: function(view_name, args){
+        view.render_from(this, view_name, args);
+    },
 
     index: BaseView.extend({
 
@@ -9,12 +13,6 @@ var EntryViews = {
 
         callback: function(response){
             $("#content").html(template.render("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
-
-            $("form#add_entry").submit(function(e){
-                e.preventDefault();
-                view.render_from(EntryViews, "post", {data: form_to_dict(e.target)});
-                return true;
-            });
         }
     }),
 
@@ -28,7 +26,7 @@ var EntryViews = {
         before: function(){
 
             if (typeof(this.data.id ) === "undefined"){
-                view.render_from(EntryViews, "index"); // redirect?
+                EntryViews.render("index");
                 return false;
             }
 
