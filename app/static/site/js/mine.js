@@ -38,54 +38,23 @@ var template = {
     },
     
     /**
+     * Renderiza um template com os dados fornecidos
+     * @param template Conteudo do template
+     * @param data Dados a serem renderizados no template
+    **/
+    render: function(template, data) {
+        return Mustache.render(template, data);
+    }, 
+    
+    /**
      * Renderiza um template com os dados (em json) fornecidos
      * @param template_name Nome do template
      * @param data Dados a serem renderizados no template
     **/
-    render: function(template_name, data) {
+    render_from: function(template_name, data) {
         var template = this.get(template_name);
         return Mustache.render(template, data);
-    }, 
-}
-
-/**
- * Auxilia a fazer requisicoes assincronas
- * @param uri Recurso da requisicao
- * @param method Metodo HTTP da requisicao
- * @param data Dados a serem anexados na requisicao (que seram transformados em json)
-**/
-function ajax(dict) {
-
-    if (typeof(dict.type) === "undefined") {
-        dict.type = "get";
-    }
-
-    if (typeof(dict.data) === "undefined") {
-        dict.data = null;
-    } else {
-        dict.data = JSON.stringify(dict.data);
-    }
-
-    if (typeof(dict.async) === "undefined") { 
-        dict.async = true;
-    }
-
-    var request = {
-        url: dict.url,
-        type: dict.type,
-        async: dict.async,
-        contentType: "application/json",
-        accepts: "application/json",
-        cache: false,
-        dataType: 'json',
-        data: dict.data,
-        error: function (jqXHR) {
-            console.log("ajax error " + jqXHR.status);
-        }
-
-    };
-
-    return $.ajax(request);
+    },   
 
 }
 
@@ -158,27 +127,51 @@ BaseManager = Class.extend ({
 
         if (typeof(url) === "undefined"){
             url = "";
-        }
-
-        if (url.charAt(0) === "/"){
+        } else if (url.charAt(0) === "/"){
             url = url.substring(1, url.length);
         }
+        
+        url = this.root_path + url;
+        
+        if (typeof(type) === "undefined") {
+            type = "get";
+        }
 
-        var result;
+        if (typeof(data) === "undefined") {
+            data = null;
+        } else {
+            data = JSON.stringify(data);
+        }
 
-        ajax({url: this.root_path + url, type: type, data: data, async: this.async})
-            .done(function(reponse){
-                result = reponse;
+        var request = {
+            url: url,
+            type: type,
+            async: this.async,
+            contentType: "application/json",
+            accepts: "application/json",
+            cache: false,
+            dataType: 'json',
+            data: data,
+            error: function (jqXHR) {
+                console.log("ajax error " + jqXHR.status);
+            }
+
+        };
+        
+        var r;
+
+        $.ajax(request).done(function(reponse){
+            r = reponse;
                 
-                if (typeof(callback) !== "undefined"){
-                    callback(reponse);
-                }
-                
-            });   
+            if (typeof(callback) !== "undefined"){
+                callback(reponse);
+            }
+
+        }); 
         
         // observacao: resultado so existira se a assincronizacao estiver desativada, ou seja, this.async === false
-        return result;       
-    
+        return r;
+
     },
 
     /**

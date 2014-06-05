@@ -11,8 +11,8 @@ var EntryViews = {
 
         api: "get",
 
-        callback: function(response){
-            $("#content").html(template.render("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
+        callback: function(response){            
+            $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
         }
     }),
 
@@ -35,7 +35,7 @@ var EntryViews = {
 
         callback: function(response){
 
-            $("#content").html(template.render("http://127.0.0.1:5000/static/site/templates/entry.mustache", response));
+            $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/entry.mustache", response));
 
             $("button#edit_entry").click(function(){
                 location.href = location.href+"/edit";                
@@ -65,7 +65,7 @@ var EntryViews = {
         },
         
         callback: function(response){
-            $("#content").html(template.render("http://127.0.0.1:5000/static/site/templates/edit_entry.mustache", response));
+            $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/edit_entry.mustache", response));
         }    
     }),
     

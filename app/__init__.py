@@ -30,6 +30,6 @@ def run():
         # permitindo que a funcao objects seja acessada por meio da variavel 'g'
         g.objects = objects
         # rodando a aplicacao
-        app.run()
+        app.run(port=80)
 
 from app import views, models
