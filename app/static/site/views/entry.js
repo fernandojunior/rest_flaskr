@@ -1,6 +1,8 @@
-// view container for entry
+/**
+* View container for entry
+**/
 var EntryViews = BaseViewContainer.extend({
-    
+
     repository: RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
     
     index: BaseView.extend({
@@ -10,6 +12,10 @@ var EntryViews = BaseViewContainer.extend({
             
             callback: function(response){            
                 $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
+            },
+            
+            error_callback: function(r){
+                $("#content").html("erro");
             }
         }
 

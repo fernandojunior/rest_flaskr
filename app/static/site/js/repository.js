@@ -1,13 +1,76 @@
 /**
- * Repositorio (partner) de API RESTFUL
+* repository.js
+* A simple lib for creating JavaScript applications using MTV (Model, Template, View) and Repository partners
 **/
-RESTRepository = PrototypeClass.extend ({
+
+/**
+* Define um repositorio (design partner) abstrato
+**/
+var BaseRepository = PrototypeClass.extend({
+    
+    prototype: {
+        
+        get: function(args, callback){
+            return null;
+        },
+        
+        post: function(args, callback){
+            return null;
+        },
+        
+        put: function(args, callback) {
+            return null;
+        },
+        
+        delete: function(args, callback){
+            return null;
+        },
+        
+        /**
+        * Factory Method (partner) para acessar comportamentos do objeto
+        **/
+        _factory: function(args){
+            var method = args.method;
+            var method_args = args.data;
+            var callback = args.callback;
+            
+            if(method == null || typeof(method) === "undefined") {
+                method = "get"; // default method
+            }
+
+            if(method_args === null || typeof(method_args) === "undefined") {
+                method_args = {};
+            }
+
+            this[method](method_args, callback);
+
+        }
+    
+    }
+
+});
+
+
+/**
+ * Repositorio de API RESTFUL basico.
+ *
+ * The HTTP request methods are typically designed to affect a given resource in standard ways
+ *
+ * HTTP Method; Action; examples
+ * GET; Obtain information about list of resources; http://example.com/api/orders
+ * GET; Obtain information about a resource; http://example.com/api/orders/1
+ * POST; Create a new resource from data provided with the request; http://example.com/api/orders
+ * PUT; Update a resource from data provided with the request; http://example.com/api/orders/123 (update order #123 from the request)
+ * DELETE; Delete a resource; http://example.com/api/orders/123 (delete order #123)
+ *
+**/
+var RESTRepository = BaseRepository.extend ({
     
     prototype: {
 
         /**
          * Inicializa o repositorio
-         * @param root_path URL principal da API
+         * @param root_path URL principal da API, por exemplo "http://example.com/api/orders"
          * @param async (default === true) Se for true, as chamadas a API (requisoes) serao assincronas, caso for false serao sincronas.
         **/
         initialize: function(args) {        
@@ -24,34 +87,59 @@ RESTRepository = PrototypeClass.extend ({
 
         },
 
-        get: function(args, callback) {
+        /**
+        * Chama o method GET da API para obter informacao de uma lista de recursos ou de apenas um recurso especifico.
+        * @param args.id Se nao for definido, todos os recursos da API serao trazidos como resposta. Caso for definido, apenas o recurso com o ID especificado sera trazido como resposta a chamada da API
+        * @param callback A funcao de callback para a chamada. Aceita um argumento, na qual sera a resposta da API
+        * @param error_callback A funcao de callback error para a chamada. Aceita um argumento, na qual sera a resposta da API
+        **/
+        get: function(args, callback, error_callback) {
             var id = args.id;
 
             if (typeof(id) === "undefined") {
-                return this.call({url: "/"}, callback);
+                return this.call({url: "/"}, callback, error_callback);
             } else {
-                return this.call({url: "/" + id}, callback);
+                return this.call({url: "/" + id}, callback, error_callback);
             }
 
         },
 
-        post: function(args, callback) {
+        /**
+        * Chama o method POST da API para criar um novo recurso.
+        * @param args.data Os dados do novo recurso que serao enviados pela requisicao para API
+        * @param callback A funcao de callback para a chamada. Aceita um argumento, na qual sera a resposta da API
+        * @param error_callback A funcao de callback error para a chamada. Aceita um argumento, na qual sera a resposta da API
+        **/
+        post: function(args, callback, error_callback) {
             var data = args.data;
 
-            return this.call({url: "/", type: "post", data: data}, callback);
+            return this.call({url: "/", type: "post", data: data}, callback, error_callback);
         },
 
-        put: function(args, callback) {        
+        /**
+        * Chama o method PUT da API para atualizar um determinado recurso.
+        * @param args.id O id do recurso a ser atualizado
+        * @param args.data Os dados do recurso a ser atualizado que serao enviados pela requisicao para API
+        * @param callback A funcao de callback para a chamada. Aceita um argumento, na qual sera a resposta da API
+        * @param error_callback A funcao de callback error para a chamada. Aceita um argumento, na qual sera a resposta da API
+        **/
+        put: function(args, callback, error_callback) {
             var id = args.id;
             var data = args.data;
 
-            return this.call({url: "/" + id, type: "put", data: data}, callback);
+            return this.call({url: "/" + id, type: "put", data: data}, callback, error_callback);
         },
 
-        delete: function(args, callback) {    
+        /**
+        * Chama o method DELETE da API para remover um determinado recurso.
+        * @param args.id O id do recurso a ser removido
+        * @param callback A funcao de callback para a chamada. Aceita um argumento, na qual sera a resposta da API
+        * @param error_callback A funcao de callback error para a chamada. Aceita um argumento, na qual sera a resposta da API
+        **/
+        delete: function(args, callback, error_callback) {    
             var id = args.id;
 
-            return this.call({url: "/" + id, type: "delete"}, callback);
+            return this.call({url: "/" + id, type: "delete"}, callback, error_callback);
         },
 
         /**
@@ -62,7 +150,7 @@ RESTRepository = PrototypeClass.extend ({
         * @param callback (opcional) Funcao de callback a ser executada com a resposta da api
         * @return (if this.async === false) Retorna o resultado da chamada a api
         **/
-        call: function(args, callback){
+        call: function(args, callback, error_callback){
             var url = args.url;
             var type = args.type;
             var data = args.data;
@@ -100,6 +188,11 @@ RESTRepository = PrototypeClass.extend ({
                 dataType: 'json',
                 data: data,
                 error: function (jqXHR) {
+                    
+                    if(error_callback !== null && typeof error_callback !== "undefined"){
+                        error_callback(jqXHR);
+                    }
+                    
                     console.log("ajax error " + jqXHR.status);
                 }
 
@@ -128,6 +221,7 @@ RESTRepository = PrototypeClass.extend ({
             var method = args.method;
             var method_args = args.data;
             var callback = args.callback;
+            var error_callback = args.error_callback;
             
             if(method == null || typeof(method) === "undefined") {
                 method = "get"; // default method
@@ -137,7 +231,7 @@ RESTRepository = PrototypeClass.extend ({
                 method_args = {};
             }
 
-            this[method](method_args, callback);
+            this[method](method_args, callback, error_callback);
 
         }
     }
@@ -145,7 +239,7 @@ RESTRepository = PrototypeClass.extend ({
 });
 
 /**
- * Classe abstrata que define contratos para criar uma view
+ * Classe abstrata para criar views
 **/
 var BaseView = PrototypeClass.extend({
     
@@ -162,19 +256,25 @@ var BaseView = PrototypeClass.extend({
         data: null,
 
         /**
-        * (opcional) Funcao que eh executada antes do metodo da api ser executado.
+        * Funcao que eh executada antes do metodo da api ser executado.
         * @return Se retornar true, metodo da api eh executado.
         **/
         before: null,
 
         /**
-        * (opcional) Funcao callback do metodo da api
+        * Funcao callback do metodo da api
         * @param response Contem a resposta da execucao do metodo da api
         **/
         callback: null,
+        
+        /**
+        * Funcao callback error do metodo da api
+        * @param response Contem a resposta da execucao do metodo da api
+        **/
+        error_callback: null,
 
         /**
-        * (opcional) Funcao que eh executada apos o metodo da api
+        * Funcao que eh executada apos o metodo da api
         **/
         after: null,
 
@@ -198,11 +298,15 @@ var BaseView = PrototypeClass.extend({
             
             // se for true, metodo da api eh executado
             if(before_result === true){
-                obj.repository._factory({
-                    method: obj.api,
-                    data: obj.data,
-                    callback: obj.callback
-                });
+                
+                if(obj.repository !== null && typeof obj.repository !== "undefined"){                
+                    obj.repository._factory({
+                        method: obj.api,
+                        data: obj.data,
+                        callback: obj.callback,
+                        error_callback: obj.error_callback
+                    });
+                }
 
                 // funcao que eh executada apos o metodo da api
                 if (obj.after !== null && typeof(obj.after) !== "undefined"){
@@ -214,19 +318,19 @@ var BaseView = PrototypeClass.extend({
 });
 
 /**
-* Container basico para armazenar views 
+* Container basico para armazenar views que por sua vez, podem acessar um repositorio
 **/
 var BaseViewContainer = PrototypeClass.extend({
     
     /**
-    * Repository do container
+    * Repositorio do container
     **/
     repository: null,
     
     /**
-     * Renderiza uma view do container de views
+     * Renderiza uma view
      * @param view_name Nome da view a ser renderizada
-     * @param args Argumentos que seram passadas ao construtor da view para ser inicializada
+     * @param args Argumentos que seram passadas ao construtor/inicializador da view
     **/
     render: function(view_name, args){
 
