@@ -122,13 +122,23 @@
         * Converte as propriedades de uma classe para o estilo descritivo
         **/
         descriptoralize: function(class_properties){
-
+            
             for(var key in class_properties.prototype){
-                class_properties.prototype[key] = { value: class_properties.prototype[key] }
+                class_properties.prototype[key] = {
+                    value: class_properties.prototype[key],
+                    enumerable: true,
+                    configurable: true,
+                    writable: true
+                }
             }
 
             for (var key in class_properties){                
-                class_properties[key] = {value: class_properties[key]}                
+                class_properties[key] = {
+                    value: class_properties[key],
+                    enumerable: true,
+                    configurable: true,
+                    writable: true
+                }
             }
 
             return class_properties;
