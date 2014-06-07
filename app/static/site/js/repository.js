@@ -1,74 +1,14 @@
 /**
- * Serializa os dados de um formulario em um dicionario
- * @param form O formulario a ser serializado (como elemento jQuery)
+ * Repositorio (partner) de API RESTFUL
 **/
-function form_to_dict(form) {
-
-    var array = jQuery(form).serializeArray(), dict = {};
-
-    jQuery.each(array, function () {
-        dict[this.name] = this.value || '';
-    });
-
-    return dict;
-}
-
-// funcoes de template
-var template = {
-    /**
-     * Funcao que retorna um template .mustache
-     * @param url Nome do template (obs. URI)
-    **/
-    get: function(url) {
-
-        var url = url, template = "";
-
-        $.ajax({
-            url: url,
-            type: 'GET',
-            async: false,
-            success: function (data) {
-                template = data;
-            }
-        });
-
-        Mustache.parse(template);
-
-        return template;
-    },
-    
-    /**
-     * Renderiza um template com os dados fornecidos
-     * @param template Conteudo do template
-     * @param data Dados a serem renderizados no template
-    **/
-    render: function(template, data) {
-        return Mustache.render(template, data);
-    }, 
-    
-    /**
-     * Renderiza um template com os dados (em json) fornecidos
-     * @param template_url Url do template
-     * @param data Dados a serem renderizados no template
-    **/
-    render_from: function(template_url, data) {
-        var template = this.get(template_url);
-        return Mustache.render(template, data);
-    },   
-
-}
-
-/**
- * Gerenciador de API RESTFUL basico assincrono.
-**/
-BaseManager = PrototypeClass.extend ({
+RESTRepository = PrototypeClass.extend ({
     
     prototype: {
 
         /**
-         * Inicializa o gerenciador
+         * Inicializa o repositorio
          * @param root_path URL principal da API
-         * @param async (default === true) Se for true, as chamadas a api (requisoes) serao assincronas, caso for false serao sincronas.
+         * @param async (default === true) Se for true, as chamadas a API (requisoes) serao assincronas, caso for false serao sincronas.
         **/
         initialize: function(args) {        
             this.root_path = args.root_path;
@@ -115,7 +55,7 @@ BaseManager = PrototypeClass.extend ({
         },
 
         /**
-        * Chama uma url da API
+        * Chama (requisita) uma url da API
         * @param args.url (default === "") A url da api a ser chamada
         * @param args.type (default === get) Tipo (http method) da chamada: get, post, put, delete
         * @param args.data (opcional) Dicionario de dados a ser enviado pela chamada
@@ -182,22 +122,22 @@ BaseManager = PrototypeClass.extend ({
         },
 
         /**
-        * Factory Method Partner para o objeto gerenciador
+        * Factory Method (partner) para o objeto
         **/
         _factory: function(args){
             var method = args.method;
-            var data = args.data;
+            var method_args = args.data;
             var callback = args.callback;
-
+            
             if(method == null || typeof(method) === "undefined") {
                 method = "get"; // default method
             }
 
-            if(data === null || typeof(data) === "undefined") {
-                data = {};
+            if(method_args === null || typeof(method_args) === "undefined") {
+                method_args = {};
             }
 
-            this[method](data, callback);
+            this[method](method_args, callback);
 
         }
     }
@@ -239,9 +179,9 @@ var BaseView = PrototypeClass.extend({
         after: null,
 
         /**
-        * API manager de onde a view ira requisitar/chamar por dados necessarios para sua renderizacao
+        * Repository de onde a view ira requisitar/chamar por dados necessarios para sua renderizacao
         **/
-        manager: null,
+        repository: null,
 
         /**
         * Renderiza a view
@@ -255,10 +195,10 @@ var BaseView = PrototypeClass.extend({
             if (obj.before !== null && typeof(obj.before) !== "undefined"){
                 before_result = obj.before();
             }
-
+            
             // se for true, metodo da api eh executado
             if(before_result === true){
-                obj.manager._factory({
+                obj.repository._factory({
                     method: obj.api,
                     data: obj.data,
                     callback: obj.callback
@@ -279,9 +219,9 @@ var BaseView = PrototypeClass.extend({
 var BaseViewContainer = PrototypeClass.extend({
     
     /**
-    * API manager BaseManager do container
+    * Repository do container
     **/
-    manager: null,
+    repository: null,
     
     /**
      * Renderiza uma view do container de views
@@ -295,11 +235,11 @@ var BaseViewContainer = PrototypeClass.extend({
         }
 
         var container = this;        
-        var manager = container.manager;
-        var view_class = container[view_name];        
-        
-        obj = view_class.create(args); // instanciando objeto do tipo BaseView        
-        obj.manager = manager;
+        var repository = container.repository;
+        var view_class = container[view_name];
+
+        obj = view_class.create(args); // instanciando objeto do tipo BaseView
+        obj.repository = repository;
         obj.render();
 
     },

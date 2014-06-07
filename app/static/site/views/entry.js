@@ -1,9 +1,10 @@
 // view container for entry
 var EntryViews = BaseViewContainer.extend({
     
-    manager: BaseManager.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
+    repository: RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
     
     index: BaseView.extend({
+        
         prototype: {
             api: "get",
             
@@ -11,10 +12,11 @@ var EntryViews = BaseViewContainer.extend({
                 $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
             }
         }
+
     }),
 
     get: BaseView.extend({
-        
+
         prototype: {
         
             api: "get",
