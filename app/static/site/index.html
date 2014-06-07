@@ -59,8 +59,27 @@
 <!-- Testes -->
 <script>
     
+    // First example: hello world
+    HelloWorld = PrototypeClass.extend({
+        
+        prototype :{
+
+            // object/prototype property
+            hello: "Hello"
+        },
+        
+        // class method
+        world: function(){
+            console.log("World");
+        }
     
-    // First example: hello big world
+    });
+    
+    hw = HelloWorld.create();
+    console.log(hw.hello);
+    HelloWorld.world();
+    
+    // Second example: hello big world with property descriptor style.
     HelloBigWorld = PrototypeClass.dextend({
         
         prototype :{
@@ -83,7 +102,10 @@
         world: {
             value: function(){
                 console.log("World");
-            }
+            },
+            enumerable: false,
+            configurable: true,
+            writable: true
         }
         
     });
@@ -92,70 +114,51 @@
     console.log(hbw.big);
     HelloBigWorld.world();
     
-    // Second example: Inheritance/polymorphism
-    var Father = PrototypeClass.dextend({
+    // Third example: Inheritance/polymorphism
+    var Father = PrototypeClass.extend({
         
         prototype: {
-            value: {
 
-                initialize:{
-                    value: function (msg){
-                        console.log("Init Father object. MSG: " + msg);
-                    }
-                },
+            initialize: function (msg){
+                console.log("Init Father object. MSG: " + msg);
+            },
 
-                id: {value : 100},
+            id: 100,
 
-                hello: {
-                    value: function() {
-                        console.log('Hello I am from object method of Father. My ID is ' + this.id); 
-                    }
-                },
+            hello: function() {
+                console.log('Hello I am from object method of Father. My ID is ' + this.id); 
+            },
 
-            }
         },
-        
-        hello: {
-            value: function() {
-                console.log('Hello I am from class method of Father.'); 
-            }
+
+        hello: function() {
+            console.log('Hello I am from class method of Father.'); 
         },
     
     });
     
-    var Filho = Father.dextend({
+    var Filho = Father.extend({
 
         prototype: {
-            value :{
 
-                id: {value : 333},
+            // object/protorype property overwrite
+            id: 333,
 
-                hello: {
-                    value : function() { 
-                        console.log('hello I am from object method of class Filho'); 
+            // object/prototype method overwrite
+            hello: function() { 
+                console.log('hello I am from object method of class Filho'); 
 
-                        // accessing super member
-                        Father.invoke_class_member("hello");
-                        Father.invoke_member(this, "hello");
-                        Filho.super(this, "hello");
-                        Filho.super_class_member("hello");                    
-                    }
-                },
-
-                adress: {
-                    value: null,
-                    enumerable: true,
-                    configurable: true,
-                    writable: true
-                }
-
-            }
+                // accessing super member
+                Father.invoke_class_member("hello");
+                Father.invoke_member(this, "hello");
+                Filho.super(this, "hello");
+                Filho.super_class_member("hello");
+            },
         },
         
-        hello:{
-            value: function(){
-                console.log("class method filho");
-            }
+        // class method overwrite
+        hello: function(){
+            console.log("class method filho");
         },
     
     });
@@ -200,7 +203,7 @@
     
     var test = Test.create();
     var test2 = Test2.create();
-    var filho2 = Filho2.create();
+    var filho2 = Filho2.create("filho 2");
     console.log(test.id);
     console.log(test2.id);
     console.log(Test2.hello);
