@@ -61,20 +61,22 @@
     
     
     // First example: hello big world
-    HelloBigWorld = PrototypeClass.extend({
+    HelloBigWorld = PrototypeClass.dextend({
         
-        prototype : {
-            
-            // object initializer
-            initialize: {
-                value : function(){ console.log("Hello "); }
-            },
-            
-            // object property
-            big: {
-                value: "Big"
+        prototype :{
+            value: {
+
+                // object initializer
+                initialize: {
+                    value : function(){ console.log("Hello "); }
+                },
+
+                // object property
+                big: {
+                    value: "Big"
+                }
+
             }
-            
         },
         
         // class method
@@ -91,24 +93,26 @@
     HelloBigWorld.world();
     
     // Second example: Inheritance/polymorphism
-    var Father = PrototypeClass.extend({
+    var Father = PrototypeClass.dextend({
         
         prototype: {
-            
-            initialize:{
-                value: function (msg){
-                    console.log("Init Father object. MSG: " + msg);
-                }
-            },
-            
-            id: {value : 100},
-            
-            hello: {
-                value: function() {
-                    console.log('Hello I am from object method of Father. My ID is ' + this.id); 
-                }
-            },
-            
+            value: {
+
+                initialize:{
+                    value: function (msg){
+                        console.log("Init Father object. MSG: " + msg);
+                    }
+                },
+
+                id: {value : 100},
+
+                hello: {
+                    value: function() {
+                        console.log('Hello I am from object method of Father. My ID is ' + this.id); 
+                    }
+                },
+
+            }
         },
         
         hello: {
@@ -119,38 +123,40 @@
     
     });
     
-    var Filho = Father.extend({
+    var Filho = Father.dextend({
 
         prototype: {
-            
-            id: {value : 333},
-            
-            hello: {
-                value : function() { 
-                    console.log('hello I am from object method of class Filho'); 
-                    
-                    // accessing super member
-                    Father.invoke_class_member("hello");
-                    Father.invoke_member(this, "hello");
-                    Filho.super(this, "hello");
-                    Filho.super_class_member("hello");                    
+            value :{
+
+                id: {value : 333},
+
+                hello: {
+                    value : function() { 
+                        console.log('hello I am from object method of class Filho'); 
+
+                        // accessing super member
+                        Father.invoke_class_member("hello");
+                        Father.invoke_member(this, "hello");
+                        Filho.super(this, "hello");
+                        Filho.super_class_member("hello");                    
+                    }
+                },
+
+                adress: {
+                    value: null,
+                    enumerable: true,
+                    configurable: true,
+                    writable: true
                 }
-            },
-            
-            adress: {
-                value: null,
-                enumerable: true,
-                configurable: true,
-                writable: true
+
             }
-            
         },
         
         hello:{
             value: function(){
                 console.log("class method filho");
             }
-        }     
+        },
     
     });
     
@@ -167,6 +173,39 @@
     console.log(Father.isPrototypeOf(filho)); // true
     console.log(filho.instanceof(Father)); // true
     console.log(father.instanceof(HelloBigWorld)); // false
+    
+
+    var Test = PrototypeClass.dextend(PrototypeClass.descriptoralize({
+        
+        hello : 123,
+        
+        prototype: {
+            id : 123,
+        }
+    }));
+    
+    var Test2 = PrototypeClass.extend({
+        
+        hello : 123213,
+        
+        prototype: {
+            id : 123,
+        }
+    });
+    
+    var Filho2 = Father.extend({
+        vai: "vai",
+    
+    });
+    
+    var test = Test.create();
+    var test2 = Test2.create();
+    var filho2 = Filho2.create();
+    console.log(test.id);
+    console.log(test2.id);
+    console.log(Test2.hello);
+    console.log(Filho2.vai);
+    
 
 </script>
 

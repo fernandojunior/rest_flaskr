@@ -48,11 +48,11 @@ var template = {
     
     /**
      * Renderiza um template com os dados (em json) fornecidos
-     * @param template_name Nome do template
+     * @param template_url Url do template
      * @param data Dados a serem renderizados no template
     **/
-    render_from: function(template_name, data) {
-        var template = this.get(template_name);
+    render_from: function(template_url, data) {
+        var template = this.get(template_url);
         return Mustache.render(template, data);
     },   
 
@@ -163,7 +163,7 @@ BaseManager = Class.extend ({
         $.ajax(request).done(function(reponse){
             r = reponse;
                 
-            if (typeof(callback) !== "undefined"){
+            if (callback !== null && typeof(callback) !== "undefined"){
                 callback(reponse);
             }
 
@@ -231,23 +231,21 @@ var BaseView = Class.extend({
     /**
     * (opcional) Funcao que eh executada apos o metodo da api
     **/
-    after: null 
-});
-
-// funcoes de utilidade para views
-var view = {
- 
+    after: null,
+    
     /**
-    * Renderiza uma view
-    * @param view_class A classe (que extende de BaseView) da view
-    * @param args Argumentos que seram passadas ao construtor da view para ser inicializada
-    * @param manager API manager de onde a view ira requisitar/chamar por dados necessarios para sua renderizacao
+    * API manager de onde a view ira requisitar/chamar por dados necessarios para sua renderizacao
     **/
-    render: function (view_class, args, manager) {
-        obj = new view_class(args); // instanciando objeto do tipo BaseView
+    manager: null,
+    
+    /**
+    * Renderiza a view
+    **/
+    render: function(){
+        obj = this; // instancia do tipo BaseView
 
         var before_result = true;
-        
+
         // funcao que eh executada antes do metodo da api ser executado
         if (obj.before !== null && typeof(obj.before) !== "undefined"){
             before_result = obj.before();
@@ -255,7 +253,7 @@ var view = {
 
         // se for true, metodo da api eh executado
         if(before_result === true){
-            manager._factory({
+            obj.manager._factory({
                 method: obj.api,
                 data: obj.data,
                 callback: obj.callback
@@ -266,26 +264,5 @@ var view = {
                 obj.after();
             }
         }
-
-    },
-    
-    /**
-     * Renderiza a view de um container de views
-     * @param views O container
-     * @param view_name Nome da view a ser renderizada
-     * @param args Argumentos que seram passadas ao construtor da view para ser inicializada
-    **/
-    render_from: function(views, view_name, args) {
-    
-        if (args === null || typeof(args) === "undefined"){
-            args = {};
-        }
-
-        var manager = views.manager;
-        var view_class = views[view_name];        
-        
-        view.render(view_class, args, manager);
-        
     }
-
-}
+});

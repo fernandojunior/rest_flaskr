@@ -18,14 +18,19 @@
             return instance;
         },
         
-        extend: function(propertyDescriptors){
+        dextend: function(propertyDescriptors){
             
-            propertyDescriptors.prototype = {
-                value : Object.create(this.prototype, propertyDescriptors.prototype),
+            if (typeof propertyDescriptors.prototype !== "undefined"
+                    && typeof propertyDescriptors.prototype.value !== "undefined"){
+                propertyDescriptors.prototype.value = Object.create(this.prototype, propertyDescriptors.prototype.value);
             }
-            
+        
             return Object.create(this, propertyDescriptors);
+
+        },
             
+        extend: function(properties){            
+            return this.dextend(this.descriptoralize(properties));
         },
         
         invoke_member: function(obj, memberName, args){
@@ -51,5 +56,19 @@
         isPrototypeOf: function(obj){
             return this.prototype.isPrototypeOf(obj);
         },
+            
+        descriptoralize: function(class_properties){            
+            
+            for(var key in class_properties.prototype){
+                class_properties.prototype[key] = { value: class_properties.prototype[key] }
+            }
+
+            for (var key in class_properties){                
+                class_properties[key] = {value: class_properties[key]}                
+            }
+
+            return class_properties;
+        
+        }
         
     };
