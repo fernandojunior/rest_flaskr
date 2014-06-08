@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<title>Flaskr</title>
+<link rel=stylesheet type=text/css href="style.css">
+    
+<!-- Vendors -->
+<script src="js/jquery.js"></script>
+<script src="js/mustache.js"></script>
+<script src="js/sammy.js"></script>
+<script src="js/parse.js"></script>
+    
+<!-- My libs -->
+<script src="js/prototype_class.js"></script>
+<script src="js/repository.js"></script>
+<script src="js/etc.js"></script>
+
+<!-- Views -->
+
+<!-- Repositories -->
+<script src="repositories/parse.js"></script>
+
+<script>
+
+    /*Iniciando objetos PARSE*/
+    Parse.initialize("xxx","yyy");
+
+    var repository = ParseRepository.create({class_name: "Eventos"});
+
+    repository.getAll();
+
+    repository.put({
+        id: "8Z384wpZmB", 
+        data:{
+            bairro: "Centro"
+        }
+    });
+
+    repository.get({id: "8Z384wpZmB"});
+
+</script>
+
+<body>
+
+    <div class=page>
+
+        <h1>Página de testes do parse</h1>
+
+        <div id="content">
+        </div>
+    </div>
+
+</body>
+</html>
