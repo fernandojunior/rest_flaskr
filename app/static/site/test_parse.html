@@ -8,7 +8,7 @@
 <script src="js/mustache.js"></script>
 <script src="js/sammy.js"></script>
 <script src="js/parse.js"></script>
-<script id="facebook-jssdk" type="text/javascript" src="//connect.facebook.net/en_US/sdk.js"></script>
+<script id="facebook-jssdk" type="text/javascript" src="//connect.facebook.net/en_US/all.js"></script>
 
 <!-- My libs -->
 <script src="js/prototype_class.js"></script>
@@ -27,13 +27,13 @@
         
         function facebookReady(){
             // init metodo do facebook, nenhuma funcao do SDK deve ser chamada anstes dela 
-            FB.init({
+            Parse.FacebookUtils.init({
                 appId: '746689365373836',
-                status: false, // don't get info about the current user after init
+                //status: false, // don't get info about the current user after init
                 cookie: true, // enable cookies to allow the server to access the session
                 xfbml: true, // find and initialize any social plugins that have been added using XFBML
-                version: 'v2.0', // determine which Graph API version is used.
-                oauth: true
+                version: 'v1.0', // determine which Graph API version is used.
+                //oauth: true
             });
 
         }
@@ -47,12 +47,13 @@
     }
     
     /*Iniciando objetos PARSE*/
-    Parse.initialize("YY", "XX");
+    Parse.initialize("XX", "YY");
         
     var TestSuite = PrototypeClass.extend({
         
         postImage: function() {
-        
+            
+    
             ParseRepository.uploadFile({
                 name: "image",
                 ext: ".png",
@@ -63,40 +64,57 @@
         },
         
         login: function() {
-            var repository = ParseRepository.g.user.create();
-            repository.login({username: $("#username").val(), password: $("#password").val()});
-            repository.current();
+            var repository = ParseRepository.g.user;
+            repository.facebook_login({});
+            //repository.login({username: $("#username").val(), password: $("#password").val()});
+            //repository.current();
+            
         },
     
-        test_new_class: function(){
+        test_new_object: function(){
         
             var repository = ParseRepository.create({class_name: "Test"});
 
-            repository.post({
-                bairro: "Centro"
-            });
+            function show_response(response){
+                console.log(JSON.stringify(response));
+            }
 
-            repository.getAll();
+            function delete_all(response){
+                for (var i = 0; i < response.length; i++) {
+                    var object = response[i];
+                    repository.delete({id : object.id });
+                }
+            }
 
+            function update(response){
+                repository.put({id : response.id, data: {bairro : "Centro2ass"}}, show_response);
+            }
+
+            repository.post({bairro: "Centro" + Math.random()}, show_response);
+            //repository.first(null, update);
+            //repository.getAll(show_response);
+            //repository.getAll(delete_all);
         },
-        
-        test_get_user: function() {
+
+        xtest_get_user: function() {
             var repository = ParseRepository.g.user;
             repository.getAll();
             repository.find({username: "fernando2"});
         },
-        
-        test_create_user: function() {
+
+        xtest_create_user: function() {
             var repository = ParseRepository.g.user;
             repository.signup({username: "fernando2" + Math.random(), password: "123"});
         },
         
-        test_delete_user: function() {
+        xtest_delete_user: function() {
             var repository = ParseRepository.g.user;
             repository.delete({id: "abc123"});
         },
 
         run: function() {
+            
+            console.log(Object.getPrototypeOf(this));
                     
             for (key in TestSuite){
                 if (key.substring(0, 5) === "test_"){
@@ -109,6 +127,8 @@
     });
     
     $(document).ready(function(){
+        
+        facebook_init();
         
         
         $("button#upload").on("click", function(e){
@@ -123,7 +143,7 @@
         
         TestSuite.run();
         
-        facebook_init();
+        
         
         
     });

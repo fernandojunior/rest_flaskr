@@ -31,5 +31,6 @@ def run():
         g.objects = objects
         # rodando a aplicacao
         app.run(port=80)
+        #app.run()
 
 from app import views, models

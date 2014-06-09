@@ -51,35 +51,11 @@ var ParseRepository = BaseRepository.extend({
        get: function(args, callback, error_callback){
 
            var id = args.id;
-
-           if (typeof(id) === "undefined") {
-               return this.getAll(callback, error_callback);
-           }
-
-           var query = this._query();
-    
-           query.get(id, {
-               success: function(response){
-                   console.log("The object was retrieved");
-
-                   if (callback !== null && typeof callback !== "undefined"){
-                       callback(response);
-                   }
-
-               },
-               error: function (error){
-                   console.log("Error:  The object was not retrieved");
-
-                   if (error_callback !== null && typeof error_callback !== "undefined"){
-                       error_callback(error);
-                   }                   
-               }
-           });
-           
+           this.first({objectId : id}, callback, error_callback);
            return;
 
        },
-
+       
        /**
        * Update a parse object
        * @param args.id The object ID
@@ -88,33 +64,13 @@ var ParseRepository = BaseRepository.extend({
        put: function(args, callback, error_callback){
            var id = args.id;
            var data = args.data;
-           
-           var query = this._query();
-           
-           query.get(id, {
-               success: function(response){                
-                
-                   response.save(data, {
-                       success: function(response) {
-                           console.log("The object was updated");                           
-                           if (callback !== null && typeof callback !== "undefined"){
-                               callback(response);
-                           }
-                       },
-                       error: function(error){
-                           console.log("Error: The object was not updated");                           
-                           if (error_callback !== null && typeof error_callback !== "undefined"){
-                               error_callback(error);
-                           }                           
-                       }
-                   });
-                
-               },
-               error: function (error){
-                   console.log("Error: The object was not retrieved");
-               }
-           });
-           
+
+           function get_callback(response){
+               response.save(data,  ParseRepository._handler("Updating a parse object.", callback, error_callback));                
+           };
+
+           this.get({id : args.id}, get_callback, error_callback);
+
            return;
 
        },
@@ -124,25 +80,9 @@ var ParseRepository = BaseRepository.extend({
        * @param data The data of the new object
        **/
        post: function(args, callback, error_callback) {
-           var data = args;
-           
-           var obj = new this._class();
-           
-           obj.save(data, {
-               success: function(response) {
-                   console.log("The object was posted.");
-                   if (callback !== null && typeof callback !== "undefined"){
-                       callback(response);
-                   }
-               },
-               error: function(error){
-                   console.log("Error: The object was posted.");
-                   if (error_callback !== null && typeof error_callback !== "undefined"){
-                       error_callback(response);
-                   }
-               }
-           });
-           
+           var data = args;           
+           var obj = this._create();           
+           obj.save(data, ParseRepository._handler("Creating a parse object in cloud.", callback, error_callback));           
            return;
        },
        
@@ -151,35 +91,13 @@ var ParseRepository = BaseRepository.extend({
        * @param args.id The ID of the object that will be deleted
        **/
        delete: function(args, callback, error_callback){
-           var id = args.id;
+
+           function get_callback(response){       
+               response.destroy(ParseRepository._handler("Deleting a parse object.", callback, error_callback));
+           };
+
+           this.get({id: args.id}, get_callback, error_callback);           
            
-           var query = this._query();
-           
-           query.get(id, {
-               success: function(response){
-                   
-                   var obj = response;
-                
-                   obj.destroy({
-                       success: function(response) {
-                           console.log("The object was deleted.");
-                            if (callback !== null && typeof callback !== "undefined"){
-                                callback(response);
-                            }
-                       },
-                       error: function(obj, error){
-                           console.log("Error: The object was not deleted");    
-                            if (error_callback !== null && typeof error_callback !== "undefined"){
-                                error_callback(response);
-                            }
-                       }
-                   });
-               },
-               error: function (error){
-                   console.log("The object was not retrieved.");
-               }
-           });
-          
            return;
        },
 
@@ -188,36 +106,37 @@ var ParseRepository = BaseRepository.extend({
         * @param args The key : value sings
         **/        
        find: function(args, callback, error_callback){
+           
+           var query = this._query();
 
+           for(var key in args){
+               query.equalTo(key, args[key]);
+           }
+           
+           query.find(ParseRepository._handler("Finding objects.", callback, error_callback));
+
+           return;
+
+       },
+       
+        /**
+        * Find first object
+        * @param args The key : value sings
+        **/        
+       first: function(args, callback, error_callback){
+           
            var query = this._query();
 
            for(var key in args){
                query.equalTo(key, args[key]);
            }
 
-           query.get(null, {
-               success: function(response){
-                   console.log("The objects were retrieved");
-
-                   if (callback !== null && typeof callback !== "undefined"){
-                       callback(response);
-                   }
-
-               },
-               error: function (error){
-                   console.log("Error: The objects were retrieved");
-
-                   if (error_callback !== null && typeof error_callback !== "undefined"){
-                       error_callback(error);
-                   }
-               }
-           });
+           query.first(ParseRepository._handler("Retrieving first object", callback, error_callback));
 
            return;
 
        },
-
-    
+           
     },
 
     /**
@@ -238,7 +157,7 @@ var ParseRepository = BaseRepository.extend({
 
             var file = file_upload_control.files[0];
             var parseFile = new Parse.File(name + ext, file, content_type);
-
+            
             parseFile.save().then(
                 function(response){
                     console.log("The file was uploaded");
@@ -261,10 +180,41 @@ var ParseRepository = BaseRepository.extend({
    },
        
    /**
+   * Callback and error callback handler
+   **/
+   _handler : function (log, callback, error_callback){
+       var calls = {
+           success: function(response){
+
+               console.log("Sucess: "+ log);
+
+               if (callback !== null && typeof callback !== "undefined"){
+                   callback(response);
+               }
+
+           },
+           error: function (error){
+
+               console.log("Error: "+ log);
+
+               if (error_callback !== null && typeof error_callback !== "undefined"){
+                   error_callback(error);
+               }
+           }
+       }
+
+       return calls;
+   },
+       
+   /**
    * Repository dictionary for global use
    **/
-   g: {}
-       
+   g: {},
+
+   register: function(name){
+       ParseRepository.g.name = this.create();
+   }
+
 });
 
 var UserParseRepository = ParseRepository.extend({
@@ -376,10 +326,10 @@ var UserParseRepository = ParseRepository.extend({
 
             } else {
 
-                console.log("did not get current user");
+                console.log("User is not logged in.");
 
                 if (error_callback !== null && typeof error_callback !== "undefined"){
-                    error_callback("User is not logged in.");
+                    error_callback();
                 }
             }
 
@@ -415,10 +365,68 @@ var UserParseRepository = ParseRepository.extend({
             });
 
 
-        }
+        },
+        
+        /**
+        * Login or sign up a user using a facebook account
+        * @param args.permisions Facebook permissions
+        **/
+        facebook_login: function(args, callback, error_callback){
+            
+            var permissions = args.permissions;
+            
+            if ( typeof scope === "undefined"){
+                scope = "user_likes,email";
+            }
+        
+            Parse.FacebookUtils.logIn(permissions, {
+                success: function(user) {
+                    
+                    if (!user.existed()) {
+                        console.log("User signed up and logged in through Facebook!");
+                    } else {
+                        console.log("User logged in through Facebook!");
+                    }
+                    
+                    this.facebook_link(user);
+
+                    if (callback !== null && typeof callback !== "undefined"){
+                        callback(user);
+                    }
+
+                },
+                error: function(user, error) {
+                    console.log("User cancelled the Facebook login or did not fully authorize.");
+                    
+                    if (error_callback !== null && typeof error_callback !== "undefined"){
+                        error_callback(error);
+                    }
+
+                }
+            });
+        
+        },
+        
+        /**
+        * Associate an existing Parse.User to a Facebook account
+        **/
+        facebook_link: function(user){
+        
+            if (!Parse.FacebookUtils.isLinked(user)) {
+                Parse.FacebookUtils.link(user, null, {
+                    success: function(user) {
+                        console.log("User was linked with facebook!");
+                    },
+                    error: function(user, error) {
+                        console.log("User cancelled the Facebook login or did not fully authorize.");
+                    }
+                });
+            }
+        },
 
     }
 
 });
 
+//UserParseRepository.register(ParseRepository);
 ParseRepository.g.user = UserParseRepository.create();
