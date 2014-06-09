@@ -38,10 +38,8 @@ var ParseRepository = BaseRepository.extend({
        /**
        * Retrieve all objects
        **/
-       getAll: function(callback, error_callback){
-           
-           return this.find(null, callback, error_callback);
-           
+       getAll: function(callback, error_callback){           
+           return this.find(null, callback, error_callback);           
        },
         
        /**
@@ -49,11 +47,9 @@ var ParseRepository = BaseRepository.extend({
        * @param args.id The object ID
        **/
        get: function(args, callback, error_callback){
-
            var id = args.id;
            this.first({objectId : id}, callback, error_callback);
            return;
-
        },
        
        /**
@@ -63,16 +59,16 @@ var ParseRepository = BaseRepository.extend({
        **/
        put: function(args, callback, error_callback){
            var id = args.id;
-           var data = args.data;
+           var data = args.data;           
+           var log = "Updating a parse object.";
 
            function get_callback(response){
-               response.save(data,  ParseRepository._handler("Updating a parse object.", callback, error_callback));                
+               response.save(data,  ParseRepository._handler(log, callback, error_callback));                
            };
 
            this.get({id : args.id}, get_callback, error_callback);
 
            return;
-
        },
 
        /**
@@ -80,9 +76,9 @@ var ParseRepository = BaseRepository.extend({
        * @param data The data of the new object
        **/
        post: function(args, callback, error_callback) {
-           var data = args;           
-           var obj = this._create();           
-           obj.save(data, ParseRepository._handler("Creating a parse object in cloud.", callback, error_callback));           
+           var data = args;         
+           var log = "Creating a parse object in cloud.";           
+           this._create().save(data, ParseRepository._handler(log, callback, error_callback));
            return;
        },
        
@@ -91,13 +87,14 @@ var ParseRepository = BaseRepository.extend({
        * @param args.id The ID of the object that will be deleted
        **/
        delete: function(args, callback, error_callback){
-
-           function get_callback(response){       
-               response.destroy(ParseRepository._handler("Deleting a parse object.", callback, error_callback));
+           var id = args.id;
+           var log = "Deleting a parse object.";
+       
+           function get_callback(response){
+               response.destroy(ParseRepository._handler(log, callback, error_callback));
            };
 
-           this.get({id: args.id}, get_callback, error_callback);           
-           
+           this.get({id: id}, get_callback, error_callback);           
            return;
        },
 
@@ -106,17 +103,15 @@ var ParseRepository = BaseRepository.extend({
         * @param args The key : value sings
         **/        
        find: function(args, callback, error_callback){
+           var log = "Finding objects.";
            
            var query = this._query();
-
            for(var key in args){
                query.equalTo(key, args[key]);
            }
            
-           query.find(ParseRepository._handler("Finding objects.", callback, error_callback));
-
+           query.find(ParseRepository._handler(log, callback, error_callback));
            return;
-
        },
        
         /**
@@ -124,17 +119,15 @@ var ParseRepository = BaseRepository.extend({
         * @param args The key : value sings
         **/        
        first: function(args, callback, error_callback){
+           var log = "Retrieving first object";
            
            var query = this._query();
-
            for(var key in args){
                query.equalTo(key, args[key]);
            }
-
-           query.first(ParseRepository._handler("Retrieving first object", callback, error_callback));
-
+           
+           query.first(ParseRepository._handler(log, callback, error_callback));
            return;
-
        },
            
     },
@@ -146,8 +139,7 @@ var ParseRepository = BaseRepository.extend({
     * @param args.content_type The file content type
     * @param args.file_upload_control $("#id")[0] or document.getElementById("id")
     **/
-    uploadFile: function(args, callback, error_callback){
- 
+    uploadFile: function(args, callback, error_callback){ 
         var name = args.name;
         var ext = args.ext;
         var content_type = args.content_type;
@@ -160,7 +152,7 @@ var ParseRepository = BaseRepository.extend({
             
             parseFile.save().then(
                 function(response){
-                    console.log("The file was uploaded");
+                    console.log("Sucess: The file was uploaded");
                     console.log(response.url());
                     if (callback !== null && typeof callback !== "undefined"){
                         callback();
@@ -176,7 +168,6 @@ var ParseRepository = BaseRepository.extend({
         }
 
         return;
-
    },
        
    /**
@@ -185,16 +176,13 @@ var ParseRepository = BaseRepository.extend({
    _handler : function (log, callback, error_callback){
        var calls = {
            success: function(response){
-
                console.log("Sucess: "+ log);
 
                if (callback !== null && typeof callback !== "undefined"){
                    callback(response);
                }
-
            },
            error: function (error){
-
                console.log("Error: "+ log);
 
                if (error_callback !== null && typeof error_callback !== "undefined"){
@@ -205,19 +193,14 @@ var ParseRepository = BaseRepository.extend({
 
        return calls;
    },
-       
+
    /**
    * Repository dictionary for global use
    **/
-   g: {},
-
-   register: function(name){
-       ParseRepository.g.name = this.create();
-   }
-
+   g: {}
 });
 
-var UserParseRepository = ParseRepository.extend({
+ParseRepository.g.user = ParseRepository.extend({
 
     prototype: {
 
@@ -234,33 +217,10 @@ var UserParseRepository = ParseRepository.extend({
         **/
         signup : function(args, callback, error_callback) {            
             var data = args;
-
             var user = this._create();
-
-            user.signUp(data, {
-                sucess: function(response){
-
-                    console.log("The user was created");
-
-                    if (callback !== null && typeof callback !== "undefined"){
-                        callback(response);
-                    }
-
-                },
-
-                error: function(user, error){
-                    console.log("Error: The user was not created");
-
-                    if (error_callback !== null && typeof error_callback !== "undefined"){
-                        error_callback({user: user, error: error});
-                    }
-
-                }
-
-            });
-
+            var log = "Signing up a user.";
+            user.signUp(data, ParseRepository._handler(log, callback, error_callback));
             return;
-
         },
 
         /**
@@ -271,33 +231,20 @@ var UserParseRepository = ParseRepository.extend({
         },
 
         /**
-        * Log the user in the app
+        * Log the user in the app. Traditional mode.
         * @param args.username Username
-        * @param args.password Encrypted password
+        * @param args.password html input value Encrypted password
         **/
         login : function(args, callback, error_callback){
-
-            this._class.logIn(args.username, args.password, {
-                success: function(response){
-
-                    console.log("The user was logged in.");
-
-                    if (callback !== null && typeof callback !== "undefined"){
-                        callback(response);
-                    }
-
-                },
-
-                error: function(user, error){
-                    console.log("Error. The user was not logged in.");
-
-                    if (error_callback !== null && typeof error_callback !== "undefined"){
-                        error_callback(error);
-                    }
-
-                }
-
-            })
+            var username = args.username;
+            var password = args.password;            
+            var log = "Logging the user in. Traditional mode.";
+            
+            this._class.logIn(
+                username,
+                password,
+                ParseRepository._handler(log, callback, error_callback)
+            );
 
             return;
 
@@ -333,6 +280,7 @@ var UserParseRepository = ParseRepository.extend({
                 }
             }
 
+            return;
         },
 
         /**
@@ -340,115 +288,91 @@ var UserParseRepository = ParseRepository.extend({
         * @param args.email The user email needed to reset the password
         **/
         reset_password : function(args, callback, error_callback){
-
-            this._class.requestPasswordReset(args.email, {
-
-                success: function(response) {
-
-                    console.log("Password reset request was sent successfully");
-
-                    if (callback !== null && typeof callback !== "undefined"){
-                        callback(response);
-                    }
-
-                },
-                error: function(error) {
-
-                    console.log("Error: Password reset request was sent not successfully");
-
-                    if (error_callback !== null && typeof error_callback !== "undefined"){
-                        error_callback(error);
-                    }
-
-                }
-
-            });
-
-
+            var email = args.email;
+            var log = "Sending a request for reset the user passaword.";
+            this._class.requestPasswordReset(
+                email,
+                ParseRepository._handler(log, callback, error_callback)
+            );
+            return;
         },
-        
+
         /**
-        * Login or sign up a user using a facebook account
+        * Login or sign up a user through Facebook
         * @param args.permisions Facebook permissions
         **/
-        facebook_login: function(args, callback, error_callback){
-            
+        facebook_login: function(args, callback, error_callback){            
             var permissions = args.permissions;
+            var log = "Logging or signing up a user through Facebook";
             
-            if ( typeof scope === "undefined"){
-                scope = "user_likes,email";
+            if (typeof permissions === "undefined"){
+                permissions = "user_likes,email";
             }
-        
-            Parse.FacebookUtils.logIn(permissions, {
-                success: function(user) {
-                    
-                    if (!user.existed()) {
-                        console.log("User signed up and logged in through Facebook!");
-                    } else {
-                        console.log("User logged in through Facebook!");
-                    }
+            
+            console.log(permissions);
 
-                    this.facebook_link({user: user, permissions: permissions});
+            function login_callback(response){
 
-                    if (callback !== null && typeof callback !== "undefined"){
-                        callback(user);
-                    }
-
-                },
-                error: function(user, error) {
-                    console.log("User cancelled the Facebook login or did not fully authorize.");
-                    
-                    if (error_callback !== null && typeof error_callback !== "undefined"){
-                        error_callback(error);
-                    }
-
+                if (!response.existed()) {
+                    console.log("User signed up and logged in through Facebook.");
+                } else {
+                    console.log("User logged in through Facebook!");
                 }
-            });
-        
+
+                if (callback !== null && typeof callback !== "undefined"){
+                    callback(response);
+                }
+
+            };
+
+            Parse.FacebookUtils.logIn(
+                permissions,
+                ParseRepository._handler(log, login_callback, error_callback)
+            );
+            return;
         },
-        
+
         /**
         * Associate an existing Parse.User to a Facebook account
         **/
-        facebook_link: function(args){
-            
-            var user = args.user;
+        facebook_link: function(args, callback, error_callback){            
+            var id = args.id;
             var permissions = args.permissions;
-        
-            if (!Parse.FacebookUtils.isLinked(user)) {
-                Parse.FacebookUtils.link(user, permissions, {
-                    success: function(user) {
-                        console.log("User was linked with facebook!");
-                    },
-                    error: function(user, error) {
-                        console.log("User cancelled the Facebook login or did not fully authorize.");
-                    }
-                });
+            var log = "Linking parser user from facebook.";
+            
+            function get_callback(response){
+                if (!Parse.FacebookUtils.isLinked(response)) {
+
+                    Parse.FacebookUtils.link(
+                        response,
+                        permissions,
+                        ParseRepository._handler(log, callback, error_callback)
+                    );
+                }
             }
+            
+            this.get({id: id}, get_callback, error_callback);
+            return;
         },
 
         /**
         * Unassociate an existing Parse.User to a Facebook account
+        * @param args.id User object ID
         **/
         facebook_unlink: function(args, callback, error_callback){
+            var id = args.id;
+            var log = "Unlinking parser user from facebook.";
 
             function get_callback(response){
                 Parse.FacebookUtils.unlink(
-                    response,
-                    ParseRepository._handler("Unlinking parser user from facebook.", callback, error_callback)
-                );
-
-                return;
-
+                    response, ParseRepository._handler(log, callback, error_callback)
+                );                
             }
 
-            this.get({id: args.id}, get_callback, error_callback);
-
+            this.get({id: id}, get_callback, error_callback);
+            return;
         }
 
     }
 
-});
-
-//UserParseRepository.register(ParseRepository);
-ParseRepository.g.user = UserParseRepository.create();
+}).create();

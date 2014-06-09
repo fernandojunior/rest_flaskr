@@ -64,11 +64,7 @@
         
         facebook_login: function() {
             var repository = ParseRepository.g.user;
-            repository.facebook_login({});
-            this.test_user();
-            //repository.login({username: $("#username").val(), password: $("#password").val()});
-            //repository.current();
-            
+            repository.facebook_login({});        
         },
 
         test_user: function(){
@@ -83,16 +79,51 @@
             };
 
             function delete_user(response){
-                repository.delete({id: response.id});
+                repository.delete({id: response.id}, show_response);
             };
             
+            function delete_all(response){
+                for (var i = 0; i < response.length; i++) {
+                    var object = response[i];
+                    repository.delete({id : object.id });
+                }
+            };
+            
+            //repository.facebook_login({}, show_response);            
             //repository.find({username: "fernando"});
             //repository.signup({username: "fernando2" + Math.random(), password: "123"}, show_response);
             //repository.current(show_response);
             //repository.getAll(show_response);
             //repository.first(null, show_response);
-            repository.current(delete_user);
+            //repository.current(delete_user);
+            //repository.getAll(delete_all);
         },
+        
+        tests_new_object: function(){
+    
+            var repository = ParseRepository.create({class_name: "Test"});
+
+            function show_response(response){
+                console.log(JSON.stringify(response));
+            }
+
+            function delete_all(response){
+                for (var i = 0; i < response.length; i++) {
+                    var object = response[i];
+                    repository.delete({id : object.id });
+                }
+            }
+
+            function update(response){
+                repository.put({id : response.id, data: {bairro : "Centro2ass"}}, show_response);
+            }
+
+            repository.post({bairro: "Centro" + Math.random()}, show_response);
+            //repository.first(null, update);
+            //repository.getAll(show_response);
+            //repository.getAll(delete_all);
+        },
+
 
         run: function() {
             
