@@ -183,7 +183,7 @@ var ParseRepository = BaseRepository.extend({
                }
            },
            error: function (error){
-               console.log("Error: "+ log);
+               console.log("Error: "+ log + JSON.stringify(error));
 
                if (error_callback !== null && typeof error_callback !== "undefined"){
                    error_callback(error);
@@ -195,11 +195,14 @@ var ParseRepository = BaseRepository.extend({
    },
 
    /**
-   * Repository dictionary for global use
+   * Repository objects dictionary for global use
    **/
    g: {}
 });
 
+/**
+* Repositorio de usuarios parse. Baseado nas classes especiais Parse.User e Parse.FacebookUtils
+**/
 ParseRepository.g.user = ParseRepository.extend({
 
     prototype: {
@@ -210,7 +213,7 @@ ParseRepository.g.user = ParseRepository.extend({
 
         /**
         * Create a new user. Before it does this, it also checks to make sure that both the username and email are unique
-        * @param username Username
+        * @param args.username Username
         * @param args.password Encrypeted password
         * @param args.email User email
         * @param args... Any data do you want to save
@@ -239,7 +242,7 @@ ParseRepository.g.user = ParseRepository.extend({
             var username = args.username;
             var password = args.password;            
             var log = "Logging the user in. Traditional mode.";
-            
+
             this._class.logIn(
                 username,
                 password,
@@ -253,8 +256,9 @@ ParseRepository.g.user = ParseRepository.extend({
         /**
         * Log out the current user
         **/
-        logout: function (){            
-            this._class.logOut();            
+        logout: function (){
+            this._class.logOut();
+            console.log("User was logged out.");
         },
         
         /**
@@ -301,7 +305,11 @@ ParseRepository.g.user = ParseRepository.extend({
         * Login or sign up a user through Facebook
         * @param args.permisions Facebook permissions
         **/
-        facebook_login: function(args, callback, error_callback){            
+        facebook_login: function(args, callback, error_callback){
+            if (typeof args === "undefined"){
+                args = {};
+            }
+            
             var permissions = args.permissions;
             var log = "Logging or signing up a user through Facebook";
             
@@ -316,7 +324,7 @@ ParseRepository.g.user = ParseRepository.extend({
                 if (!response.existed()) {
                     console.log("User signed up and logged in through Facebook.");
                 } else {
-                    console.log("User logged in through Facebook!");
+                    console.log("User just logged in through Facebook!");
                 }
 
                 if (callback !== null && typeof callback !== "undefined"){
