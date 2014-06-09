@@ -52,7 +52,6 @@
     var TestSuite = PrototypeClass.extend({
         
         postImage: function() {
-            
     
             ParseRepository.uploadFile({
                 name: "image",
@@ -63,53 +62,36 @@
 
         },
         
-        login: function() {
+        facebook_login: function() {
             var repository = ParseRepository.g.user;
             repository.facebook_login({});
+            this.test_user();
             //repository.login({username: $("#username").val(), password: $("#password").val()});
             //repository.current();
             
         },
-    
-        test_new_object: function(){
-        
-            var repository = ParseRepository.create({class_name: "Test"});
 
+        test_user: function(){
+            var repository = ParseRepository.g.user;
+            
             function show_response(response){
                 console.log(JSON.stringify(response));
             }
 
-            function delete_all(response){
-                for (var i = 0; i < response.length; i++) {
-                    var object = response[i];
-                    repository.delete({id : object.id });
-                }
-            }
+            function unlink(response){
+                repository.facebook_unlink({id: response.id});
+            };
 
-            function update(response){
-                repository.put({id : response.id, data: {bairro : "Centro2ass"}}, show_response);
-            }
-
-            repository.post({bairro: "Centro" + Math.random()}, show_response);
-            //repository.first(null, update);
+            function delete_user(response){
+                repository.delete({id: response.id});
+            };
+            
+            //repository.find({username: "fernando"});
+            //repository.signup({username: "fernando2" + Math.random(), password: "123"}, show_response);
+            //repository.current(show_response);
             //repository.getAll(show_response);
-            //repository.getAll(delete_all);
-        },
-
-        xtest_get_user: function() {
-            var repository = ParseRepository.g.user;
-            repository.getAll();
-            repository.find({username: "fernando2"});
-        },
-
-        xtest_create_user: function() {
-            var repository = ParseRepository.g.user;
-            repository.signup({username: "fernando2" + Math.random(), password: "123"});
-        },
-        
-        xtest_delete_user: function() {
-            var repository = ParseRepository.g.user;
-            repository.delete({id: "abc123"});
+            //repository.first(null, show_response);
+            repository.current(delete_user);
         },
 
         run: function() {
@@ -121,30 +103,26 @@
                     TestSuite[key]();
                 }
             }
-        
+
         }
-    
+
     });
-    
+
     $(document).ready(function(){
-        
+
         facebook_init();
-        
-        
+
         $("button#upload").on("click", function(e){
             e.preventDefault();
             TestSuite.postImage();
         });
-        
+
         $("button#login").on("click", function(e){
             e.preventDefault();
-            TestSuite.login();
+            TestSuite.facebook_login();
         });
-        
+
         TestSuite.run();
-        
-        
-        
         
     });
     

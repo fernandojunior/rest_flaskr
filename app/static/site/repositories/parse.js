@@ -309,7 +309,7 @@ var UserParseRepository = ParseRepository.extend({
         logout: function (){            
             this._class.logOut();            
         },
-
+        
         /**
         * Get the current user that is logged in the session (localStorage).
         **/
@@ -387,8 +387,8 @@ var UserParseRepository = ParseRepository.extend({
                     } else {
                         console.log("User logged in through Facebook!");
                     }
-                    
-                    this.facebook_link(user);
+
+                    this.facebook_link({user: user, permissions: permissions});
 
                     if (callback !== null && typeof callback !== "undefined"){
                         callback(user);
@@ -410,10 +410,13 @@ var UserParseRepository = ParseRepository.extend({
         /**
         * Associate an existing Parse.User to a Facebook account
         **/
-        facebook_link: function(user){
+        facebook_link: function(args){
+            
+            var user = args.user;
+            var permissions = args.permissions;
         
             if (!Parse.FacebookUtils.isLinked(user)) {
-                Parse.FacebookUtils.link(user, null, {
+                Parse.FacebookUtils.link(user, permissions, {
                     success: function(user) {
                         console.log("User was linked with facebook!");
                     },
@@ -423,6 +426,25 @@ var UserParseRepository = ParseRepository.extend({
                 });
             }
         },
+
+        /**
+        * Unassociate an existing Parse.User to a Facebook account
+        **/
+        facebook_unlink: function(args, callback, error_callback){
+
+            function get_callback(response){
+                Parse.FacebookUtils.unlink(
+                    response,
+                    ParseRepository._handler("Unlinking parser user from facebook.", callback, error_callback)
+                );
+
+                return;
+
+            }
+
+            this.get({id: args.id}, get_callback, error_callback);
+
+        }
 
     }
 
