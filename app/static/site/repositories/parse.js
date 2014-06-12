@@ -4,7 +4,7 @@
 **/
 var ParseRepository = BaseRepository.extend({
 
-   prototype: {
+    prototype: {
        
        /**
        * Repository initializer
@@ -203,11 +203,11 @@ var ParseRepository = BaseRepository.extend({
 /**
 * Repositorio de usuarios parse. Baseado nas classes especiais Parse.User e Parse.FacebookUtils
 **/
-ParseRepository.g.user = ParseRepository.extend({
+ParseRepository.User = ParseRepository.extend({
 
     prototype: {
 
-        initialize: function (args){
+        initialize: function (){
             this._class = Parse.User;
         },
 
@@ -299,25 +299,54 @@ ParseRepository.g.user = ParseRepository.extend({
                 ParseRepository._handler(log, callback, error_callback)
             );
             return;
+        }
+    }
+
+});
+
+/**
+* Repositorio de usuarios parse. Baseado nas classes especiais Parse.User e Parse.FacebookUtils
+**/
+ParseRepository.FacebookUser = ParseRepository.User.extend({
+
+    prototype: {
+
+        initialize: function (){
+            this._util = Parse.FacebookUtils;
+        },
+
+        /**
+        * @see ParseRepository.FacebookUser.login
+        **/
+        signup : function(args, callback, error_callback) {
+            return this.login(args, callback, error_callback);
+        },
+
+        /**
+        * Redirect to signup method
+        **/
+        post : function(args, callback, error_callback){
+            return this.login(args, callback, error_callback);
         },
 
         /**
         * Login or sign up a user through Facebook
         * @param args.permisions Facebook permissions
         **/
-        facebook_login: function(args, callback, error_callback){
+        login: function(args, callback, error_callback){
+            
+            console.log("ate aqui");
+            
             if (typeof args === "undefined"){
                 args = {};
             }
-            
+
             var permissions = args.permissions;
             var log = "Logging or signing up a user through Facebook";
             
             if (typeof permissions === "undefined"){
                 permissions = "user_likes,email";
             }
-            
-            console.log(permissions);
 
             function login_callback(response){
 
@@ -333,7 +362,7 @@ ParseRepository.g.user = ParseRepository.extend({
 
             };
 
-            Parse.FacebookUtils.logIn(
+            this._util.logIn(
                 permissions,
                 ParseRepository._handler(log, login_callback, error_callback)
             );
@@ -342,16 +371,17 @@ ParseRepository.g.user = ParseRepository.extend({
 
         /**
         * Associate an existing Parse.User to a Facebook account
+        * @param args.id User ID
         **/
-        facebook_link: function(args, callback, error_callback){            
+        link: function(args, callback, error_callback){            
             var id = args.id;
             var permissions = args.permissions;
             var log = "Linking parser user from facebook.";
             
             function get_callback(response){
-                if (!Parse.FacebookUtils.isLinked(response)) {
+                if (!this._util.isLinked(response)) {
 
-                    Parse.FacebookUtils.link(
+                    this._util.link(
                         response,
                         permissions,
                         ParseRepository._handler(log, callback, error_callback)
@@ -367,12 +397,12 @@ ParseRepository.g.user = ParseRepository.extend({
         * Unassociate an existing Parse.User to a Facebook account
         * @param args.id User object ID
         **/
-        facebook_unlink: function(args, callback, error_callback){
+        unlink: function(args, callback, error_callback){
             var id = args.id;
             var log = "Unlinking parser user from facebook.";
 
             function get_callback(response){
-                Parse.FacebookUtils.unlink(
+                this._util.unlink(
                     response, ParseRepository._handler(log, callback, error_callback)
                 );                
             }
@@ -383,4 +413,7 @@ ParseRepository.g.user = ParseRepository.extend({
 
     }
 
-}).create();
+});
+
+ParseRepository.g.user = ParseRepository.User.create();
+ParseRepository.g.facebook_user = ParseRepository.FacebookUser.create();
