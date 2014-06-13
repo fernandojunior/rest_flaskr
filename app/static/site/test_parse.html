@@ -7,10 +7,12 @@
 <script src="js/jquery.js"></script>
 <script src="js/parse.js"></script>
 
-<!-- My libs -->
-<script src="js/prototype_class.js"></script>
-<script src="js/repository.js"></script>
-<script src="repositories/parse.js"></script>
+<!-- Prototype Class for Oriented Object supporting -->
+<script type="text/jscript" src="https://raw.githubusercontent.com/fernandojunior/prototype_class.js/master/prototype_class.js"></script>
+
+<!-- (Parse) Repository for data requesting/managementing  -->
+<script type="text/javascript" src="https://raw.githubusercontent.com/fernandojunior/repository.js/master/repository.js"></script>
+<script type="text/javascript" src="https://raw.githubusercontent.com/fernandojunior/repository.js/master/repositories/parse.js"></script>
 
 <script>
     // http://parse.com/docs/js/symbols/Parse.FacebookUtils.html#.logIn
@@ -108,7 +110,6 @@
             repository.signup({
                 username: username,
                 password: password,
-                email: "blabla@ai.com",
                 endereco: "logo ali"
             }, show_response);
         
@@ -225,8 +226,6 @@
 
     $(document).ready(function(){
 
-        //facebook_init();
-
         /**
         * Adicioanando eventos nos botoes
         **/
@@ -261,7 +260,7 @@
         });
 
         // rodando scripts de teste
-        TestSuite.test_user();
+        //TestSuite.test_user();
         
     });
     
