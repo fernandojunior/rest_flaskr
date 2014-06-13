@@ -11,7 +11,7 @@ var EntryViews = BaseViewContainer.extend({
             api: "get",
             
             callback: function(response){            
-                $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
+                $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
             },
             
             error_callback: function(r){
@@ -43,7 +43,7 @@ var EntryViews = BaseViewContainer.extend({
 
             callback: function(response){
 
-                $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/entry.mustache", response));
+                $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/entry.mustache", response));
 
                 $("button#edit_entry").click(function(){
                     location.href = location.href+"/edit";                
@@ -77,7 +77,7 @@ var EntryViews = BaseViewContainer.extend({
             },
 
             callback: function(response){
-                $("#content").html(template.render_from("http://127.0.0.1:5000/static/site/templates/edit_entry.mustache", response));
+                $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/edit_entry.mustache", response));
             }    
         }
     }),

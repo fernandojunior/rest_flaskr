@@ -3,28 +3,34 @@
 <title>Flaskr</title>
 <link rel=stylesheet type=text/css href="style.css">
     
-<!-- Vendors -->
+<!-- jQuery -->
 <script src="js/jquery.js"></script>
-<script src="js/mustache.js"></script>
-<script src="js/sammy.js"></script>
-    
-<!-- My libs -->
-<script src="js/prototype_class.js"></script>
-<script src="js/repository.js"></script>
-<script src="js/etc.js"></script>
 
-<!-- Repositories -->
-<script src="repositories/rest.js"></script>
+<!-- Mustache for templating -->
+<script type="text/javascript" src="https://raw.githubusercontent.com/fernandojunior/mustache.js/master/mustache.js"></script>
 
-<!-- Views -->
+<!-- Sammy for url routing -->
+<script type="text/javascript" src="https://raw.githubusercontent.com/fernandojunior/sammy/master/lib/min/sammy-latest.min.js"></script>
+
+<!-- Prototype Class for Oriented Object supporting -->
+<script type="text/jscript" src="https://raw.githubusercontent.com/fernandojunior/prototype_class.js/master/prototype_class.js"></script>
+
+<!-- (REST) Repository for data requesting/managementing  -->
+<script type="text/javascript" src="https://raw.githubusercontent.com/fernandojunior/repository.js/master/repository.js"></script>
+<script type="text/javascript" src="https://raw.githubusercontent.com/fernandojunior/repository.js/master/repositories/rest.js"></script>
+
+<!-- Some util functions for templating -->
+<script src="js/util.js"></script>
+
+<!-- My Views -->
 <script src="views/entry.js"></script>
 
-<!-- Routes -->
+<!-- My Routes -->
 <script type="text/javascript" charset="utf-8">
 
     var app = $.sammy(function() {
 
-        this.get('#/', function() {            
+        this.get('#/', function() {
             EntryViews.render("index");
         });
 

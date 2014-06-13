@@ -1,8 +1,9 @@
+var Util = {};
 /**
  * Serializa os dados de um formulario em um dicionario
  * @param form O formulario a ser serializado (como elemento jQuery)
 **/
-function form_to_dict(form) {
+Util.form_to_dict = function (form) {
 
     var array = jQuery(form).serializeArray(), dict = {};
 
@@ -14,7 +15,7 @@ function form_to_dict(form) {
 }
 
 // funcoes de template
-var template = {
+Util.template = {
     /**
      * Funcao que retorna um template .mustache
      * @param url Nome do template (obs. URI)
