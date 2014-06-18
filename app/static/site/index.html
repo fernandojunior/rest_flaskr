@@ -35,7 +35,7 @@
         });
 
         this.post('#/', function() {
-            EntryViews.render("post", {data: this.params});
+            EntryViews.render("post", this.params);
             this.redirect('#/');
         });
 
@@ -48,7 +48,7 @@
         });
 
         this.put('#/:id/edit', function() { 
-            EntryViews.render("put", {id: this.params['id'], data: this.params});
+            EntryViews.render("put", this.params);
             this.redirect('#/');            
         });
 

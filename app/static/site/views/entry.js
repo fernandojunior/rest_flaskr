@@ -8,13 +8,17 @@ var EntryViews = BaseViewContainer.extend({
     index: BaseView.extend({
         
         prototype: {
-            api: "get",
+            method: "get",
             
-            callback: function(response){            
+            initialize: function(data) {
+                this.data = data;
+            },
+            
+            success: function(response){            
                 $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
             },
             
-            error_callback: function(r){
+            error: function(r){
                 $("#content").html("erro");
             }
         }
@@ -25,10 +29,10 @@ var EntryViews = BaseViewContainer.extend({
 
         prototype: {
         
-            api: "get",
+            method: "get",
 
-            initialize: function(args) {
-                this.data = {id: args.id};
+            initialize: function(data) {
+                this.data = data;
             },
 
             before: function(){
@@ -41,7 +45,7 @@ var EntryViews = BaseViewContainer.extend({
                 return true;
             },
 
-            callback: function(response){
+            success: function(response){
 
                 $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/entry.mustache", response));
 
@@ -59,10 +63,10 @@ var EntryViews = BaseViewContainer.extend({
 
     post: BaseView.extend({
         prototype: {
-            api: "post",
+            method: "post",
 
-            initialize: function(args){
-                this.data = {data: args.data};
+            initialize: function(data){
+                this.data = data;
             }
         }
         
@@ -70,13 +74,13 @@ var EntryViews = BaseViewContainer.extend({
     
     get_edit_form: BaseView.extend({
         prototype: {
-            api: "get",
+            method: "get",
 
             initialize: function(args){
                 this.data = {id: args.id};
             },
 
-            callback: function(response){
+            success: function(response){
                 $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/edit_entry.mustache", response));
             }    
         }
@@ -84,13 +88,13 @@ var EntryViews = BaseViewContainer.extend({
     
     put: BaseView.extend({
         prototype: {
-            api: "put",
+            method: "put",
 
-            initialize: function(args){
-                this.data = {id: args.id, data: args.data};
+            initialize: function(data){
+                this.data = data;
             },
 
-            callback: function(response){
+            success: function(response){
                 console.log("Entry atualizado com sucesso. RESULT: " + response.result);
             }
         }
@@ -98,13 +102,13 @@ var EntryViews = BaseViewContainer.extend({
 
     delete: BaseView.extend({
         prototype: {
-            api: "delete",
+            method: "delete",
 
-            initialize: function(args){
-                this.data = {id: args.id};
+            initialize: function(data){
+                this.data = data;
             },
 
-            callback: function(response){
+            success: function(response){
                 console.log("Entry deletado com sucesso. RESULT: " + response.result);
             }
         }
