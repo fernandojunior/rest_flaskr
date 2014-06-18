@@ -4,14 +4,16 @@
 var EntryViews = BaseViewContainer.extend({
 
     repository: RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
-    
+
+    template_path: "http://127.0.0.1:5000/static/site/templates/",
+
     index: BaseView.extend({
-        
+
         prototype: {
             method: "get",
             
-            success: function(response){            
-                $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/entries.mustache", response));
+            success: function(response){
+                $("#content").html(EntryViews.render_template("entries", response));
             },
             
             error: function(r){
@@ -39,7 +41,7 @@ var EntryViews = BaseViewContainer.extend({
 
             success: function(response){
 
-                $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/entry.mustache", response));
+                $("#content").html(EntryViews.render_template("entry", response));
 
                 $("button#edit_entry").click(function(){
                     location.href = location.href+"/edit";                
@@ -65,7 +67,7 @@ var EntryViews = BaseViewContainer.extend({
             method: "get",
 
             success: function(response){
-                $("#content").html(Util.template.render_from("http://127.0.0.1:5000/static/site/templates/edit_entry.mustache", response));
+                $("#content").html(EntryViews.render_template("edit_entry", response));
             }    
         }
     }),
