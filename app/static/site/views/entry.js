@@ -1,7 +1,7 @@
 /**
 * View container for entry
 **/
-var EntryViews = BaseViewContainer.extend({
+Views.register("entry" , {
 
     repository: RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
 
@@ -13,7 +13,7 @@ var EntryViews = BaseViewContainer.extend({
             method: "get",
             
             success: function(response){
-                $("#content").html(EntryViews.render_template("entries", response));
+                $("#content").html(Views.get("entry").render_template("entries", response));
             },
             
             error: function(r){
@@ -32,7 +32,7 @@ var EntryViews = BaseViewContainer.extend({
             before: function(){
 
                 if (typeof(this.data.id ) === "undefined"){
-                    EntryViews.render("index");
+                    Views.get("entry").render("index");
                     return false;
                 }
 
@@ -41,7 +41,7 @@ var EntryViews = BaseViewContainer.extend({
 
             success: function(response){
 
-                $("#content").html(EntryViews.render_template("entry", response));
+                $("#content").html(Views.get("entry").render_template("entry", response));
 
                 $("button#edit_entry").click(function(){
                     location.href = location.href+"/edit";                
@@ -67,7 +67,7 @@ var EntryViews = BaseViewContainer.extend({
             method: "get",
 
             success: function(response){
-                $("#content").html(EntryViews.render_template("edit_entry", response));
+                $("#content").html(Views.get("entry").render_template("edit_entry", response));
             }    
         }
     }),
