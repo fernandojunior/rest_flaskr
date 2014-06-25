@@ -9,88 +9,82 @@ Views.register("entry" , {
 
     template_path: "http://127.0.0.1:5000/static/site/templates/",
 
-    index: BaseView.extend({
+    index: View.pextend({
 
-        prototype: {
-            method: "get",
-            
-            success: function(response){
-                $("#content").html(Views.get("entry").render_template("entries", response));
-            },
-            
-            error: function(r){
-                $("#content").html("erro");
+        method: "get",
+
+        success: function(response){
+            $("#content").html(Views.get("entry").render_template("entries", response));
+        },
+
+        error: function(r){
+            $("#content").html("erro");
+        }
+
+    }),
+
+    get: View.pextend({
+
+        method: "get",
+
+        before: function(){
+
+            if (typeof(this.data.id ) === "undefined"){
+                Views.get("entry").render("index");
+                return false;
             }
+
+            return true;
+        },
+
+        success: function(response){
+
+            $("#content").html(Views.get("entry").render_template("entry", response));
+
+            $("button#edit_entry").click(function(){
+                location.href = location.href+"/edit";                
+            });
+
+            $("button#delete_entry").click(function(){
+                location.href = location.href+"/delete";
+            });
         }
 
     }),
 
-    get: BaseView.extend({
+    post: View.pextend({
 
-        prototype: {
-        
-            method: "get",
+        method: "post",
 
-            before: function(){
+    }),
 
-                if (typeof(this.data.id ) === "undefined"){
-                    Views.get("entry").render("index");
-                    return false;
-                }
+    get_edit_form: View.pextend({
 
-                return true;
-            },
+        method: "get",
 
-            success: function(response){
-
-                $("#content").html(Views.get("entry").render_template("entry", response));
-
-                $("button#edit_entry").click(function(){
-                    location.href = location.href+"/edit";                
-                });
-
-                $("button#delete_entry").click(function(){
-                    location.href = location.href+"/delete";
-                });
-            }
+        success: function(response){
+            $("#content").html(Views.get("entry").render_template("edit_entry", response));
         }
 
     }),
 
-    post: BaseView.extend({
-        prototype: {
-            method: "post",
+    put: View.pextend({
+
+        method: "put",
+
+        success: function(response){
+            console.log("Entry atualizado com sucesso. RESULT: " + response.result);
         }
-        
+
     }),
+
+    delete: View.pextend({
     
-    get_edit_form: BaseView.extend({
-        prototype: {
-            method: "get",
+        method: "delete",
 
-            success: function(response){
-                $("#content").html(Views.get("entry").render_template("edit_entry", response));
-            }    
+        success: function(response){
+            console.log("Entry deletado com sucesso. RESULT: " + response.result);
         }
-    }),
-    
-    put: BaseView.extend({
-        prototype: {
-            method: "put",
 
-            success: function(response){
-                console.log("Entry atualizado com sucesso. RESULT: " + response.result);
-            }
-        }
-    }),
-
-    delete: BaseView.extend({
-        prototype: {
-            method: "delete",
-
-            success: function(response){
-                console.log("Entry deletado com sucesso. RESULT: " + response.result);
-            }
-        }
     })
 })
