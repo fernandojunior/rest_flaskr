@@ -1,9 +1,11 @@
+Repository.register("entry", RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}));
+
 /**
 * View container for entry
 **/
 Views.register("entry" , {
 
-    repository: RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}),
+    repository: Repository.get("entry"),
 
     template_path: "http://127.0.0.1:5000/static/site/templates/",
 
