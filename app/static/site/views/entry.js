@@ -9,8 +9,8 @@ Views.register("entry" , {
 
     template_path: "http://127.0.0.1:5000/static/site/templates/",
 
-    index: View.pextend({
-
+    index: View.extend("prototype", {
+        
         method: "get",
 
         success: function(response){
@@ -23,7 +23,7 @@ Views.register("entry" , {
 
     }),
 
-    get: View.pextend({
+    get: View.extend("prototype", {
 
         method: "get",
 
@@ -52,13 +52,13 @@ Views.register("entry" , {
 
     }),
 
-    post: View.pextend({
+    post: View.extend("prototype", {
 
         method: "post",
 
     }),
 
-    get_edit_form: View.pextend({
+    get_edit_form: View.extend("prototype", {
 
         method: "get",
 
@@ -68,7 +68,7 @@ Views.register("entry" , {
 
     }),
 
-    put: View.pextend({
+    put: View.extend("prototype", {
 
         method: "put",
 
@@ -78,7 +78,7 @@ Views.register("entry" , {
 
     }),
 
-    delete: View.pextend({
+    delete: View.extend("prototype", {
     
         method: "delete",
 
