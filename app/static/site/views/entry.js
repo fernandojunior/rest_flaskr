@@ -1,16 +1,14 @@
-Repository.register("entry", RESTRepository.create({root_path: "http://127.0.0.1:5000/api/1.0/entries/", async: true}));
-
 /**
 * View container for entry
 **/
-Views.register("entry" , {
+var EntryViews = Views.extend("prototype", {
 
-    repository: Repository.get("entry"),
+    //repository: Repository.get("entry"),
 
     template_path: "http://127.0.0.1:5000/static/site/templates/",
 
     index: View.extend("prototype", {
-        
+
         method: "get",
 
         success: function(response){
@@ -87,4 +85,4 @@ Views.register("entry" , {
         }
 
     })
-})
+});
