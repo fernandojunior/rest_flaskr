@@ -3,10 +3,6 @@
 **/
 var EntryViews = Views.extend("prototype", {
 
-    //repository: Repository.get("entry"),
-
-    template_path: "http://127.0.0.1:5000/static/site/templates/",
-
     index: View.extend("prototype", {
 
         method: "get",
@@ -27,12 +23,12 @@ var EntryViews = Views.extend("prototype", {
 
         before: function(){
 
-            if (typeof(this.data.id ) === "undefined"){
+            if (typeof this.data === "undefined" || typeof this.data.id === "undefined") {
                 Views.get("entry").render("index");
-                return false;
+                return false; // don't call the repository method
             }
 
-            return true;
+            return true; // call the repository method
         },
 
         success: function(response){
