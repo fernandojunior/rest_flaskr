@@ -3,23 +3,22 @@
 **/
 var EntryViews = Views.extend("prototype", {
 
-    index: View.extend("prototype", {
+    index: View.extend({
 
-        method: "get",
+        prototype: {
 
-        success: function(response){
-            $("#content").html(Views.get("entry").render_template("entries", response));
-        },
+            success: function(response){
+                $("#content").html(Views.get("entry").render_template("entries", response));
+            },
 
-        error: function(r){
-            $("#content").html("erro");
+            error: function(r){
+                $("#content").html("erro");
+            }
         }
 
     }),
 
     get: View.extend("prototype", {
-
-        method: "get",
 
         before: function(){
 
@@ -53,8 +52,6 @@ var EntryViews = Views.extend("prototype", {
     }),
 
     get_edit_form: View.extend("prototype", {
-
-        method: "get",
 
         success: function(response){
             $("#content").html(Views.get("entry").render_template("edit_entry", response));
