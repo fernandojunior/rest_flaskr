@@ -1,7 +1,7 @@
 /**
 * View container for entry
 **/
-var EntryViews = Views.extend("prototype", {
+var EntryViews = Views.extend({scope: "prototype"}, {
 
     index: View.extend({
 
@@ -18,7 +18,7 @@ var EntryViews = Views.extend("prototype", {
 
     }),
 
-    get: View.extend("prototype", {
+    get: View.extend({scope: "prototype"}, {
 
         before: function(){
 
@@ -45,13 +45,13 @@ var EntryViews = Views.extend("prototype", {
 
     }),
 
-    post: View.extend("prototype", {
+    post: View.extend({scope: "prototype"}, {
 
         method: "post",
 
     }),
 
-    get_edit_form: View.extend("prototype", {
+    get_edit_form: View.extend({scope: "prototype"}, {
 
         success: function(response){
             $("#content").html(Views.get("entry").render_template("edit_entry", response));
@@ -59,7 +59,7 @@ var EntryViews = Views.extend("prototype", {
 
     }),
 
-    put: View.extend("prototype", {
+    put: View.extend({scope: "prototype"}, {
 
         method: "put",
 
@@ -69,7 +69,7 @@ var EntryViews = Views.extend("prototype", {
 
     }),
 
-    delete: View.extend("prototype", {
+    delete: View.extend({scope: "prototype"}, {
     
         method: "delete",
 
