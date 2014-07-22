@@ -13,10 +13,12 @@ from app.models import Entry
     DELETE - delete - Deleta um recurso - http://<servername>/api/1.0/entries/123 (deleta entry #123)
 """
 
-class EntriesView(FlaskView):
+class EntryView(FlaskView):
     """
     Classe que define restful views para a entidade Entry
     """
+    
+    route_base = '/entries/'
 
     route_prefix = '/api/1.0/'
 	
