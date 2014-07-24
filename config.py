@@ -1,1 +1,1 @@
-DATABASE_NAME = 'test.db'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///C:\\Users\\fernando\\Workspace\\tmp\\test.db'

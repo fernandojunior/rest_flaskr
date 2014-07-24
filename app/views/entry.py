@@ -1,5 +1,6 @@
 from flask import g, request, jsonify, abort # http://flask.pocoo.org/
 from flask.ext.classy import FlaskView # http://pythonhosted.org/Flask-Classy/
+from app import db
 from app.models import Entry
 
 """
@@ -22,21 +23,18 @@ class EntryView(FlaskView):
 
     route_prefix = '/api/1.0/'
 	
-    @property
-    def _objects(self):
-        return g.objects(Entry)
-
-    def index(self):
-        data = self._objects.all()
-        result = [d.__dict__ for d in data]
+    def index(self):        
+        result = [i.serialize for i in Entry.query.all()]
         return jsonify(entries=result)
-
+    
     def get(self, id):
-        if not self._objects.has(id):
-            abort(404)
 
-        result = self._objects.get(id).__dict__
-        return jsonify(entry=result)
+        entry = Entry.query.get(id)
+
+        if not entry:
+            abort(404)           
+
+        return jsonify(entry=entry.serialize)
 	
     def post(self):
 	
@@ -49,40 +47,40 @@ class EntryView(FlaskView):
         if not 'text' in request.json:
             abort(400)
 
-        e = Entry(request.json['title'], request.json['text'])
-        id = self._objects.save(e)
+        entry = Entry(request.json['title'], request.json['text'])
+        db.session.add(e)
+        db.session.commit()
 
-        self._objects.commit()
-
-        return jsonify(result=id)
+        return jsonify(result=entry.id)
 
     def put(self, id):
         
-        if not self._objects.has(id):
+        entry = Entry.query.get(id)
+        
+        if not entry:
             abort(404)
 
-        e = self._objects.get(id)
-
         if 'title' in request.json:
-            e.title = request.json['title']
-			
+            entry.title = request.json['title']
+
         if 'text' in request.json:
-            e.text = request.json['text']
+            entry.text = request.json['text']
 			
         #for key, value in request.json:
         #    setattr(e, key, value)
 
-        self._objects.update(e)
-        self._objects.commit()
+        db.session.commit()
 
         return jsonify(result='True'), 200
 		
     def delete(self, id):
         
-        if not self._objects.has(id):
+        entry = Entry.query.get(id)
+        
+        if not entry:
             abort(404)
-
-        self._objects.delete(id)
-        self._objects.commit()
+            
+        db.session.delete(entry)
+        db.session.commit()
 
         return jsonify(result='True'), 200

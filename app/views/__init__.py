@@ -5,10 +5,6 @@ from app import app
 def index():
     return 'Welcome'
 
-@app.teardown_appcontext
-def close_db(error):
-    if g.db.connected: g.db.close()
-
 @app.errorhandler(400)
 def bad_request(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
