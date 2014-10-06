@@ -17,8 +17,8 @@ Front-end tools
     - jQuery for dependency issues
     - Mustache.js for templating
     - Sammy.js for url routing
-    - PrototypeClass.js for Oriented Object supporting
-    - Repository.js for data requesting and managementing
+    - My PrototypeClass.js lib for Oriented Object supporting
+    - My Repository.js lib for data requesting and managementing
 
 Use
 ---
@@ -33,5 +33,4 @@ Obs: See the requirements.txt needed to run the application. It requires SQLAlch
 References
 ----------
 
-[1] https://github.com/mitsuhiko/flask/tree/master/examples/flaskr
-[2] http://pythonhosted.org/Flask-Classy/
+1. https://github.com/mitsuhiko/flask/tree/master/examples/flaskr
